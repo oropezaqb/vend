@@ -128,11 +128,19 @@
           <span>Tables</span></a>
       </li>
 
-      <!-- Nav Item - Companies -->
+      <!-- Nav Item - Companies Collapse Menu -->
       <li class="nav-item">
-        <a class="nav-link" href="/companies">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseCompanies" aria-expanded="true" aria-controls="collapseCompanies">
           <i class="far fa-fw fa-building"></i>
-          <span>Companies</span></a>
+          <span>Companies</span>
+        </a>
+        <div id="collapseCompanies" class="collapse" aria-labelledby="headingCompanies" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href="/current_company">Current Company</a>
+            <a class="collapse-item" href="/companies">List</a>
+            <a class="collapse-item" href="/applications">Applications</a>
+          </div>
+        </div>
       </li>
 
       <!-- Divider -->
@@ -162,6 +170,7 @@
 
           <!-- Topbar Search -->
           <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+            @csrf
             <div class="input-group">
               <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
               <div class="input-group-append">
@@ -183,6 +192,7 @@
               <!-- Dropdown - Messages -->
               <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in" aria-labelledby="searchDropdown">
                 <form class="form-inline mr-auto w-100 navbar-search">
+                  @csrf
                   <div class="input-group">
                     <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2">
                     <div class="input-group-append">

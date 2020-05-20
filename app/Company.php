@@ -22,4 +22,12 @@ class Company extends Model
         }
         $this->users()->sync($user, false);
     }
+    public function applications()
+    {
+        return $this->hasMany(Application::class);
+    }
+    public function currentCompany()
+    {
+        return $this->hasMany(CurrentCompany::class);
+    }
 }

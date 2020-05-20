@@ -33,26 +33,29 @@ class CompanyController extends Controller
     }
     public function store()
     {
-        $this->validateCompany();
-        $company = new Company(request(['name']));
-        $company->code = substr(md5(microtime()), rand(0, 26), 6);
-        $company->save();
-        $user = \Auth::user();
-        $company->employ($user);
-        $approveApplication = Ability::firstOrCreate(['name' => 'approve_job_application']);
-        $admin = Role::firstOrCreate(['name' => 'admin', 'company_id' => $company->id]);
-        $admin->allowTo($approveApplication);
-        $user->assignRole($admin);
-        $recordJournalEntries = Ability::firstOrCreate(['name' => 'record_journal_entries']);
-        $staff = Role::firstOrCreate(['name' => 'staff', 'company_id' => $company->id]);
-        $staff->allowTo($recordJournalEntries);
-        $company->save();
-        $approveApplication->save();
-        $admin->save();
-        $currentCompany = new CurrentCompany(['user_id' => $user->id, 'company_id' => $company->id]);
-        $currentCompany->save();
-        return redirect(route('home'))
-            ->with('status', 'Welcome to InnoBooks! You may now start adding items through the navigation pane.');
+       try {
+            $this->validateCompany();
+            $company = new Company(request(['name']));
+            $company->code = substr(md5(microtime()),rand(0,26),6);
+            $company->save();
+            $user = \Auth::user();
+            $company->employ($user);
+            $approveApplication = Ability::firstOrCreate(['name' => 'approve_job_application', 'company_id' => $company->id]);
+            $admin = Role::firstOrCreate(['name' => 'admin', 'company_id' => $company->id]);
+            $admin->allowTo($approveApplication);
+            $user->assignRole($admin);
+            $recordJournalEntries = Ability::firstOrCreate(['name' => 'record_journal_entries', 'company_id' => $company->id]);
+            $staff = Role::firstOrCreate(['name' => 'staff', 'company_id' => $company->id]);
+            $staff->allowTo($recordJournalEntries);
+            $company->save();
+            $approveApplication->save();
+            $admin->save();
+            $currentCompany = new CurrentCompany(['user_id' => $user->id, 'company_id' => $company->id]);
+            $currentCompany->save();
+            return redirect(route('home'))->with('status', 'Welcome to InnoBooks! You may now start adding items through the navigation pane.');
+        } catch (\Exception $e) {
+            return $e->getMessage();
+        }
     }
     public function edit(Company $company)
     {
