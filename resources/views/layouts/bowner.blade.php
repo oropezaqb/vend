@@ -49,7 +49,7 @@
 
                 <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
                     <div class="menu_section">
-                        <h3>{{ Auth::user()->role->name }}</h3>
+                        <h3>{{ Auth::user()->name }}</h3>
                         <ul class="nav side-menu">
                             @if (Auth::user()->role_id == '3' || Auth::user()->role_id == '4')
                             <li><a><i class="fa fa-opencart"></i> Sale <span class="fa fa-chevron-down"></span></a>
@@ -59,7 +59,7 @@
                             </li>
                             @endif
                             
-                            @if(Auth::user()->isBowner())
+                            @auth
                             <li><a><i class="fa fa-hourglass-1"></i> Production <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu">
                                     <li><a href="{{ route('bowner.production.index') }}">All Productions</a></li>
@@ -101,9 +101,9 @@
                                     <li><a href="{{ route('bowner.supplier.create') }}">Add Suppliers</a></li>
                                 </ul>
                             </li>       
-                            @endif  
+                            @endauth  
 
-                            @if (Auth::user()->isManager())
+                            @auth
                             <li><a><i class="fa fa-hourglass-1"></i> Production <span class="fa fa-chevron-down"></span></a>
                                 <ul class="nav child_menu">
                                     <li><a href="{{ route('bowner.production.index') }}">All Productions</a></li>
@@ -123,7 +123,7 @@
                                     <li><a href="{{ route('bowner.supplier.create') }}">Add Suppliers</a></li>
                                 </ul>
                             </li>       
-                            @endif  
+                            @endauth  
                         </ul>
                     </div>
 

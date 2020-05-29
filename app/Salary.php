@@ -8,10 +8,11 @@ class Salary extends Model
 {
     //
     protected $fillable = [
-        'human_id', 'basic_salary', 'nondeduct_leave', 'deduct_leave', 'change', 'dates', 'total' 
+        'human_id', 'basic_salary', 'nondeduct_leave', 'deduct_leave', 'change', 'dates', 'total'
     ];
 
-    public function human(){
+    public function human()
+    {
         return $this->belongsTo('App\Human');
     }
 }

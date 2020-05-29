@@ -13,21 +13,22 @@ class Order extends Model
     
     protected $dates = ['deleted_at'];
 
-    public function user() 
+    public function user()
     {
-        return $this->belongsTo('App\User');    
+        return $this->belongsTo('App\User');
     }
 
-    public function product() {
-        return $this->belongsTo('App\Product');    
-    }  
-
-    public function customer() 
+    public function product()
     {
-        return $this->belongsTo('App\Customer');    
+        return $this->belongsTo('App\Product');
     }
 
-    public function orderdetail() 
+    public function customer()
+    {
+        return $this->belongsTo('App\Customer');
+    }
+
+    public function orderdetail()
     {
         return $this->hasMany('App\OrderDetail');
     }

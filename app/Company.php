@@ -3,8 +3,10 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Searchable\Searchable;
+use Spatie\Searchable\SearchResult;
 
-class Company extends Model
+class Company extends Model implements Searchable
 {
     protected $guarded = [];
     public function path()
@@ -29,5 +31,14 @@ class Company extends Model
     public function currentCompany()
     {
         return $this->hasMany(CurrentCompany::class);
+    }
+    public function getSearchResult(): SearchResult
+    {
+        $url = route('companies.show', $this);
+        return new SearchResult(
+            $this,
+            $this->name,
+            $url
+        );
     }
 }

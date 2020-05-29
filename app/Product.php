@@ -17,5 +17,4 @@ class Product extends Model
     {
         return $this->belongsTo('App\Material');
     }
-
 }

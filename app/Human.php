@@ -21,5 +21,4 @@ class Human extends Model
     {
         return $this->id;
     }
-
 }

@@ -14,24 +14,6 @@
                         id="page"
                         class="container"
                     >
-                        <h6 class="font-weight-bold">Search</h6>
-                        <form method="GET" action="/companies">
-                            @csrf
-                            <div class="form-group">
-                                <label for="name">Company Name: </label>
-                                <input 
-                                    class="form-control @error('name') is-danger @enderror" 
-                                    type="text" 
-                                    name="name" 
-                                    id="name" required
-                                    value="{{ old('name') }}">
-                                @error('name')
-                                    <p class="help is-danger">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            <button class="btn btn-primary" type="submit">Search</button>
-                        </form>
-                        <p></p>
                         <h6 class="font-weight-bold">Add</h6>
                         <p>Want to add a new company? Click <a href="{{ url('/companies/create') }}">here</a>!</p>
                         <p></p>

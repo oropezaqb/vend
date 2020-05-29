@@ -69,7 +69,7 @@ class User extends Authenticatable
     }
     public function isAdmin()
     {
-        if($this->role->name == "admin" && $this->is_active == 1){
+        if ($this->role->name == "admin" && $this->is_active == 1) {
             return true;
         }
         return false;
@@ -77,7 +77,7 @@ class User extends Authenticatable
     
     public function isBowner()
     {
-        if($this->role->name == "business" && $this->is_active == 1){
+        if ($this->role->name == "business" && $this->is_active == 1) {
             return true;
         }
         return false;
@@ -93,7 +93,7 @@ class User extends Authenticatable
 
     public function isEmployee()
     {
-        if($this->role->name == "employee" && $this->is_active == 1){
+        if ($this->role->name == "employee" && $this->is_active == 1) {
             return true;
         }
         return false;

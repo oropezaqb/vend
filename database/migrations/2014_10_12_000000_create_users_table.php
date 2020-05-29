@@ -9,6 +9,7 @@ class CreateUsersTable extends Migration
     /**
      * Run the migrations.
      *
+     * @SuppressWarnings(PHPMD.ShortMethodName)
      * @return void
      */
     public function up()
