@@ -40,3 +40,12 @@ Route::get('/search', 'SearchController@index')->name('search');
 
 Route::get('/notifications', 'NotificationController@index')->name('notifications.index');
 Route::delete('/notifications/{notification}', 'NotificationController@destroy')->name('notifications.destroy');
+
+Route::group(['prefix' => 'messages'], function () {
+    Route::get('/', ['as' => 'messages', 'uses' => 'MessagesController@index']);
+    Route::get('create', ['as' => 'messages.create', 'uses' => 'MessagesController@create']);
+    Route::post('/', ['as' => 'messages.store', 'uses' => 'MessagesController@store']);
+    Route::get('{id}', ['as' => 'messages.show', 'uses' => 'MessagesController@show']);
+    Route::put('{id}', ['as' => 'messages.update', 'uses' => 'MessagesController@update']);
+    Route::delete('{id}', ['as' => 'messages.destroy', 'uses' => 'MessagesController@destroy']);
+});

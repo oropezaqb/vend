@@ -2,7 +2,7 @@
 @section ('content')
     <div class="col-md-12">
         <div class="card">
-            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->current_company->company->name }} (Users)</div>
+            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->currentCompany->company->name }} (Users)</div>
             <div class="card-body">
                 <div id="wrapper">
                     <div
@@ -31,12 +31,12 @@
                         <p>Want to add a company user? Click <a href="{{ url('/company_users/create') }}">here</a>!</p>
                         <p></p>
                         <h6 class="font-weight-bold">List</h6>
-                        @forelse ($company_users as $company_user)
+                        @forelse ($companyUsers as $companyUser)
                             <div id="content">
                                 <div id="name">
-                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '/company_users/{{ $company_user->id }}';">View</button></div>
-                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '/company_users/{{ $company_user->id }}/edit';">Edit</button></div>
-                                    <div style="display:inline-block;">&nbsp;&nbsp;{!! $company_user->name !!}</div>
+                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '/company_users/{{ $companyUser->id }}';">View</button></div>
+                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '/company_users/{{ $companyUser->id }}/edit';">Edit</button></div>
+                                    <div style="display:inline-block;">&nbsp;&nbsp;{!! $companyUser->name !!}</div>
                                 </div>
                             </div>
                         @empty

@@ -13,16 +13,16 @@
                         <p>Want to add a company as current? Click <a href="{{ url('/current_company/create') }}">here</a>!</p>
                         <p></p>
                         <h6 class="font-weight-bold">List</h6>
-                        @if (!empty($current_company))
+                        @if (!empty($currentCompany))
                             <div id="content">
                                 <div id="name">
-                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '{{ $current_company->path() }}';">View</button></div>
-                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '/current_company/{{ $current_company->id }}/edit';">Edit</button></div>
-                                    <div style="display:inline-block;"><form method="POST" action="/current_company/{{ $current_company->id }}">
+                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '{{ $currentCompany->path() }}';">View</button></div>
+                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '/current_company/{{ $currentCompany->id }}/edit';">Edit</button></div>
+                                    <div style="display:inline-block;"><form method="POST" action="/current_company/{{ $currentCompany->id }}">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-link" type="submit">Delete</button>
-                                    </form></div><div style="display:inline-block;">&nbsp;&nbsp;{!! $current_company->company->name !!}</div>
+                                    </form></div><div style="display:inline-block;">&nbsp;&nbsp;{!! $currentCompany->company->name !!}</div>
                                 </div>
                             </div>
                         @else

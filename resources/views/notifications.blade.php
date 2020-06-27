@@ -16,7 +16,7 @@
                                     </div>
                                     <div>
                                       <div class="small text-gray-500">{{ $notification->created_at }}</div>
-                                      <span class="font-weight-bold">{{ $notification->data['message'] }}</span>
+                                      {{ $notification->data['message'] }}
                                     </div>
                                 </a>
                             </div>
