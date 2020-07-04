@@ -5,6 +5,10 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+    /**
+     * @SuppressWarnings(PHPMD.ShortMethodName)
+     */
+
 class AddSoftDeletesToMessagesTable extends Migration
 {
     /**
