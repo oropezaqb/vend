@@ -19,7 +19,7 @@ class AccountController extends Controller
     }
     public function index()
     {
-        $company = \Auth::user()->current_company->company;
+        $company = \Auth::user()->currentCompany->company;
         if (empty(request('title'))) {
             $accounts = Account::where('company_id', $company->id)->latest()->get();
         } else {
@@ -45,10 +45,10 @@ class AccountController extends Controller
     public function store()
     {
         $this->validateAccount();
-        $company = \Auth::user()->current_company->company;
-        $subsidiaryLedger = true;
-        if (empty(request('subsidiary_ledger'))) {
-            $subsidiaryLedger = false;
+        $company = \Auth::user()->currentCompany->company;
+        $subsidiaryLedger = false;
+        if (request('subsidiary_ledger') == 1) {
+            $subsidiaryLedger = true;
         }
         $account = new Account([
             'company_id' => $company->id,

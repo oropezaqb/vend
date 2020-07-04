@@ -20,9 +20,10 @@ class AbilityController extends Controller
     public function index()
     {
         if (empty(request('name'))) {
-            $abilities = Ability::latest()->get();
+            $abilities = \Auth::user()->currentCompany->company->abilities;
         } else {
-            $abilities = Ability::where('name', 'like', '%' . request('name') . '%')->get();
+            $abilities = \Auth::user()->currentCompany->company->abilities()
+                ->where('name', 'like', '%' . request('name') . '%')->get();
         }
         \Request::flash();
         return view('abilities.index', compact('abilities'));
@@ -38,7 +39,7 @@ class AbilityController extends Controller
     public function store()
     {
         $this->validateAbility();
-        $company = \Auth::user()->current_company->company;
+        $company = \Auth::user()->currentCompany->company;
         $ability = new Ability([
             'company_id' => $company->id,
             'name' => request('name')

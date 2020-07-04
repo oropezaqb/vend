@@ -23,12 +23,9 @@ class CompanyUserController extends Controller
     }
     public function index()
     {
-        if(empty(request('name')))
-        {
+        if (empty(request('name'))) {
             $companyUsers = \Auth::user()->currentCompany->company->users;
-        }
-        else
-        {
+        } else {
             $companyUsers = \Auth::user()->currentCompany->company->users()
                 ->where('name', 'like', '%' . request('name') . '%')->get();
         }
@@ -70,10 +67,8 @@ class CompanyUserController extends Controller
         $user = User::find(request('id'));
         $roles = $request->input('role');
         $user->roles()->detach();
-        if (isset($roles))
-        {
-            foreach ($roles as $role)
-            {
+        if (isset($roles)) {
+            foreach ($roles as $role) {
                 $user->assignRole(Role::find($role));
             }
         }

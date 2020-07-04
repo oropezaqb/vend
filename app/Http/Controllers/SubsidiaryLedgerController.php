@@ -19,10 +19,10 @@ class SubsidiaryLedgerController extends Controller
     }
     public function index()
     {
-        //if (!empty(\Auth::user()->current_company->company))
+        //if (!empty(\Auth::user()->currentCompany->company))
         //{
 
-        $company = \Auth::user()->current_company->company;
+        $company = \Auth::user()->currentCompany->company;
         if (empty(request('name'))) {
             $subsidiaryLedgers = SubsidiaryLedger::where('company_id', $company->id)->latest()->get();
         } else {
@@ -54,7 +54,7 @@ class SubsidiaryLedgerController extends Controller
     public function store()
     {
         $this->validateSubsidiaryLedger();
-        $company = \Auth::user()->current_company->company;
+        $company = \Auth::user()->currentCompany->company;
         $subsidiaryLedger = new SubsidiaryLedger([
             'company_id' => $company->id,
             'number' => request('number'),

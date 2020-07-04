@@ -2,7 +2,7 @@
 @section ('content')
     <div class="col-md-12">
         <div class="card">
-            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->current_company->company->name }} (Document Type Details)</div>
+            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->currentCompany->company->name }} (Document Type Details)</div>
             <div class="card-body">
                 <div id="wrapper">
                     <div

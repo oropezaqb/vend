@@ -19,10 +19,10 @@ class ReportLineItemController extends Controller
     }
     public function index()
     {
-        //if (!empty(\Auth::user()->current_company->company))
+        //if (!empty(\Auth::user()->currentCompany->company))
         //{
 
-        $company = \Auth::user()->current_company->company;
+        $company = \Auth::user()->currentCompany->company;
         if (empty(request('line_item'))) {
             $reportLineItems = ReportLineItem::where('company_id', $company->id)->latest()->get();
         } else {
@@ -54,7 +54,7 @@ class ReportLineItemController extends Controller
     public function store()
     {
         $this->validateReportLineItem();
-        $company = \Auth::user()->current_company->company;
+        $company = \Auth::user()->currentCompany->company;
         $reportLineItem = new ReportLineItem([
             'company_id' => $company->id,
             'report' => request('report'),

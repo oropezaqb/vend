@@ -21,10 +21,10 @@ class RoleController extends Controller
     public function index()
     {
         if (empty(request('name'))) {
-            $company = \Auth::user()->current_company->company()->firstOrFail();
+            $company = \Auth::user()->currentCompany->company()->firstOrFail();
             $roles = Role::where('company_id', $company->id)->get();
         } else {
-            $company = \Auth::user()->current_company->company()->firstOrFail();
+            $company = \Auth::user()->currentCompany->company()->firstOrFail();
             $roles = Role::where('company_id', $company->id)->where('name', 'like', '%' . request('name') . '%')->get();
         }
         \Request::flash();
@@ -37,13 +37,13 @@ class RoleController extends Controller
     }
     public function create()
     {
-        $abilities = Ability::latest()->get();
+        $abilities = \Auth::user()->currentCompany->company->abilities()->latest()->get();
         return view('roles.create', compact('abilities'));
     }
     public function store(Request $request)
     {
         $this->validateRole();
-        $company = \Auth::user()->current_company->company()->firstOrFail();
+        $company = \Auth::user()->currentCompany->company()->firstOrFail();
         $role = new Role(['name' => request('name'), 'company_id' => $company->id]);
         $role->save();
         $abilities = $request->input('ability');
@@ -56,7 +56,7 @@ class RoleController extends Controller
     }
     public function edit(Role $role)
     {
-        $abilities = Ability::latest()->get();
+        $abilities = \Auth::user()->currentCompany->company->abilities()->latest()->get();
         $checkedAbilities = $role->abilities()->latest()->get();
         return view('roles.edit', compact('role', 'abilities', 'checkedAbilities'));
     }

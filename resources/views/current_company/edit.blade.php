@@ -6,7 +6,7 @@
             <div class="card-body">
                 <div id="wrapper">
                     <div id="page" class="container">
-                        <form method="POST" action="/current_company/{{ $current_company->id }}">
+                        <form method="POST" action="/current_company/{{ $currentCompany->id }}">
                             @csrf
                             @method('PUT')
                             @if (!empty($message))

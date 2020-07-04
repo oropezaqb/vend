@@ -20,7 +20,7 @@ class DocumentController extends Controller
     }
     public function index()
     {
-        $company = \Auth::user()->current_company->company;
+        $company = \Auth::user()->currentCompany->company;
         if (empty(request('name'))) {
             $documents = Document::where('company_id', $company->id)->latest()->get();
         } else {
@@ -46,7 +46,7 @@ class DocumentController extends Controller
     public function store()
     {
         $this->validateDocument();
-        $company = \Auth::user()->current_company->company;
+        $company = \Auth::user()->currentCompany->company;
         $document = new Document([
             'company_id' => $company->id,
             'name' => request('name')

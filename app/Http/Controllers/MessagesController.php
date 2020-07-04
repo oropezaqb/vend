@@ -49,15 +49,13 @@ class MessagesController extends Controller
         try {
             $thread = Thread::findOrFail($id);
             $userId = Auth::id();
-            if (in_array($userId, $thread->participantsUserIds()))
-            {
+            if (in_array($userId, $thread->participantsUserIds())) {
                 // $users = User::whereNotIn('id', $thread->participantsUserIds($userId))->get();
-                $users = \Auth::user()->currentCompany->company->users->whereNotIn('id', $thread->participantsUserIds($userId));
+                $users = \Auth::user()->currentCompany->company->users
+                    ->whereNotIn('id', $thread->participantsUserIds($userId));
                 $thread->markAsRead($userId);
                 return view('messenger.show', compact('thread', 'users'));
-            }
-            else
-            {
+            } else {
                 Session::flash('error_message', 'You are unauthorized to view thread ' . $id . '.');
 
                 return redirect()->route('messages');

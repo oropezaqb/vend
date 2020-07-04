@@ -15,4 +15,8 @@ class Ability extends Model
     {
         return route('abilities.show', $this);
     }
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
 }

@@ -41,4 +41,8 @@ class Company extends Model implements Searchable
             $url
         );
     }
+    public function abilities()
+    {
+        return $this->hasMany(Ability::class);
+    }
 }
