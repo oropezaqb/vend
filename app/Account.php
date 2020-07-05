@@ -11,4 +11,8 @@ class Account extends Model
     {
         return route('accounts.show', $this);
     }
+    public function posting()
+    {
+        return $this->belongsTo(Posting::class);
+    }
 }

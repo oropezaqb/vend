@@ -11,4 +11,8 @@ class SubsidiaryLedger extends Model
     {
         return route('subsidiary_ledgers.show', $this);
     }
+    public function posting()
+    {
+        return $this->belongsTo(Posting::class);
+    }
 }

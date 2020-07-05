@@ -11,4 +11,8 @@ class ReportLineItem extends Model
     {
         return route('report_line_items.show', $this);
     }
+    public function posting()
+    {
+        return $this->belongsTo(Posting::class);
+    }
 }

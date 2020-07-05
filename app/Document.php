@@ -11,4 +11,8 @@ class Document extends Model
     {
         return route('documents.show', $this);
     }
+    public function journalEntries()
+    {
+        return $this->hasMany(JournalEntry::class, 'document_type_id');
+    }
 }
