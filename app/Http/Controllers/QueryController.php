@@ -25,12 +25,9 @@ class QueryController extends Controller
     public function index()
     {
         $company = \Auth::user()->currentCompany->company;
-        if (empty(request('title')))
-        {
+        if (empty(request('title'))) {
             $queries = Query::where('company_id', $company->id)->latest()->get();
-        }
-        else
-        {
+        } else {
             $queries = Query::where('company_id', $company->id)
                 ->where('title', 'like', '%' . request('title') . '%')->get();
         }
@@ -85,8 +82,7 @@ class QueryController extends Controller
     }
     public function edit(ReportLineItem $reportLineItem)
     {
-        if (\Route::currentRouteName() === 'report_line_items.edit')
-        {
+        if (\Route::currentRouteName() === 'report_line_items.edit') {
             \Request::flash();
         }
         return view('report_line_items.edit', compact('reportLineItem'));
@@ -110,9 +106,7 @@ class QueryController extends Controller
     {
         if (stripos($query->query, 'file ') === 0) {
             return redirect(route('queries.index'))->with('status', 'Cannot run file reports here.');
-        }
-        else
-        {
+        } else {
             $db = new DbAccess();
             $stmt = $db->query($query->query);
             $ncols = $stmt->columnCount();

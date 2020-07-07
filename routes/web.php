@@ -43,7 +43,7 @@ Route::post('reports/{query}/screen', 'ReportController@screen')->name('reports.
 Route::post('reports/{query}/pdf', 'ReportController@pdf')->name('reports.pdf');
 Route::post('reports/{query}/csv', 'ReportController@csv')->name('reports.csv');
 Route::post('reports/{query}/run', 'ReportController@run')->name('reports.run');
-Route::post('reports/trial_balance', 'ReportController@trial_balance')->name('reports.trial_balance');
+Route::post('reports/trial_balance', 'ReportController@trialBalance')->name('reports.trial_balance');
 Route::get('/reports', 'ReportController@index')->name('reports.index');
 
 Route::get('/search', 'SearchController@index')->name('search');

@@ -17,6 +17,7 @@
     <exclude-pattern>*/seeds/*</exclude-pattern>
     <exclude-pattern>*.blade.php</exclude-pattern>
     <exclude-pattern>*.js</exclude-pattern>
+    <exclude-pattern>app/EPMADD/*</exclude-pattern>
 
     <!-- Show progression -->
     <arg value="p"/>

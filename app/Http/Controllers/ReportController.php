@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Storage;
 use DateTime;
 use Dompdf\Dompdf;
 
+    /**
+     * @SuppressWarnings(PHPMD.ElseExpression)
+     * @SuppressWarnings(PHPMD.ShortVariableName)
+     */
+
 class ReportController extends Controller
 {
     public function __construct()
@@ -31,9 +36,7 @@ class ReportController extends Controller
     {
         if (stripos($query->query, 'file ') === 0) {
             return redirect(route('queries.index'))->with('status', 'Cannot run file reports here.');
-        }
-        else
-        {
+        } else {
             $db = new DbAccess();
             $stmt = $db->query($query->query);
             $r = new Report();
@@ -45,9 +48,7 @@ class ReportController extends Controller
     {
         if (stripos($query->query, 'file ') === 0) {
             return redirect(route('queries.index'))->with('status', 'Cannot run file reports here.');
-        }
-        else
-        {
+        } else {
             $db = new DbAccess();
             $stmt = $db->query($query->query);
             $r = new Report();
@@ -59,9 +60,7 @@ class ReportController extends Controller
     {
         if (stripos($query->query, 'file ') === 0) {
             return redirect(route('reports.index'))->with('status', 'Cannot run file reports here.');
-        }
-        else
-        {
+        } else {
             $db = new DbAccess();
             //$query->query = $query->query . ' WHERE company_id=' . auth()->user()->currentCompany->company->id;
             $stmt = $db->query($query->query);
@@ -74,17 +73,23 @@ class ReportController extends Controller
             return view('reports.screen', compact('query', 'stmt', 'headings'));
         }
     }
-    public function trial_balance () {
+    public function trialBalance()
+    {
         return view('reports.trial_balance');
     }
-    public function run (Request $request) {
+    public function run(Request $request)
+    {
         $query = new Query();
         $query->title = "Trial Balance";
         $date = DateTime::createFromFormat('Y-m-d', "$request->date");
-        $query->date = 'As of ' . date_format($date,'M d, Y');
+        $query->date = 'As of ' . date_format($date, 'M d, Y');
         $db = new DbAccess();
-        $stmt = $db->query("SELECT accounts.title, SUM(debit) debit FROM journal_entries RIGHT JOIN journal_entry_posting ON journal_entries.id = journal_entry_posting.journal_entry_id RIGHT JOIN postings ON journal_entry_posting.posting_id = postings.id RIGHT JOIN accounts ON postings.account_id = accounts.id WHERE accounts.company_id=" . auth()->user()->currentCompany->company->id . " AND journal_entries.date<=". "'" . request('date'). "'" ." GROUP BY accounts.title;");
-        $ncols = $stmt->columnCount();
+        $stmt = $db->query("SELECT accounts.title, SUM(debit) debit FROM journal_entries
+            RIGHT JOIN journal_entry_posting ON journal_entries.id = journal_entry_posting.journal_entry_id
+            RIGHT JOIN postings ON journal_entry_posting.posting_id = postings.id
+            RIGHT JOIN accounts ON postings.account_id = accounts.id
+            WHERE accounts.company_id=" . auth()->user()->currentCompany->company->id . "
+            AND journal_entries.date<=". "'" . request('date'). "'" ." GROUP BY accounts.title;");
         $headings = array('Account Title', 'Debit', 'Credit');
         return view('reports.trial_balance.screen', compact('query', 'stmt', 'headings'));
     }
@@ -133,8 +138,7 @@ class ReportController extends Controller
     }
     public function edit(ReportLineItem $reportLineItem)
     {
-        if (\Route::currentRouteName() === 'report_line_items.edit')
-        {
+        if (\Route::currentRouteName() === 'report_line_items.edit') {
             \Request::flash();
         }
         return view('report_line_items.edit', compact('reportLineItem'));
