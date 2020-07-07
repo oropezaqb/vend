@@ -9,7 +9,7 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-  <title>Vend - Dashboard</title>
+  <title>InnoBooks</title>
 
   <!-- Custom fonts for this template-->
   <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
@@ -33,7 +33,7 @@
         <div class="sidebar-brand-icon rotate-n-15">
           <i class="fas fa-laugh-wink"></i>
         </div>
-        <div class="sidebar-brand-text mx-3">SB Admin <sup>2</sup></div>
+        <div class="sidebar-brand-text mx-3">InnoBooks</div>
       </a>
 
       <!-- Divider -->
@@ -51,37 +51,102 @@
 
       <!-- Heading -->
       <div class="sidebar-heading">
-        Interface
+        Main
       </div>
 
-      <!-- Nav Item - Pages Collapse Menu -->
+      <!-- Nav Item - Expenses Collapse Menu -->
       <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
-          <i class="fas fa-fw fa-cog"></i>
-          <span>Components</span>
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseExpenses" aria-expanded="true" aria-controls="collapseExpenses">
+          <i class="fas fa-fw fa-receipt"></i>
+          <span>Expenses</span>
         </a>
-        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+        <div id="collapseExpenses" class="collapse" aria-labelledby="headingExpenses" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Custom Components:</h6>
-            <a class="collapse-item" href="/buttons">Buttons</a>
-            <a class="collapse-item" href="/cards">Cards</a>
+            <a class="collapse-item" href="/expenses">Expenses</a>
+            <a class="collapse-item" href="/suppliers">Suppliers</a>
           </div>
         </div>
       </li>
 
-      <!-- Nav Item - Utilities Collapse Menu -->
+      <!-- Nav Item - Sales Collapse Menu -->
       <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities" aria-expanded="true" aria-controls="collapseUtilities">
-          <i class="fas fa-fw fa-wrench"></i>
-          <span>Utilities</span>
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseSales" aria-expanded="true" aria-controls="collapseSales">
+          <i class="fas fa-fw fa-file-invoice-dollar"></i>
+          <span>Sales</span>
         </a>
-        <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities" data-parent="#accordionSidebar">
+        <div id="collapseSales" class="collapse" aria-labelledby="headingSales" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Custom Utilities:</h6>
-            <a class="collapse-item" href="/utilities-color">Colors</a>
-            <a class="collapse-item" href="/utilities-border">Borders</a>
-            <a class="collapse-item" href="/utilities-animation">Animations</a>
-            <a class="collapse-item" href="/utilities-other">Other</a>
+            <a class="collapse-item" href="/sales">All Sales</a>
+            <a class="collapse-item" href="/invoices">Invoices</a>
+            <a class="collapse-item" href="/customers">Customers</a>
+            <a class="collapse-item" href="/products">Products and Services</a>
+          </div>
+        </div>
+      </li>
+
+      <!-- Nav Item - Journal Entries Collapse Menu -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseJournalEntries" aria-expanded="true" aria-controls="collapseJournalEntries">
+          <i class="fas fa-fw fa-book"></i>
+          <span>Journal Entries</span>
+        </a>
+        <div id="collapseJournalEntries" class="collapse" aria-labelledby="headingJournalEntries" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href="/journal_entries">All Journal Entries</a>
+            <a class="collapse-item" href="/documents">Documents</a>
+            <a class="collapse-item" href="/accounts">Account Titles</a>
+            <a class="collapse-item" href="/subsidiary_ledgers">Subsidiary Ledgers</a>
+            <a class="collapse-item" href="/report_line_items">Report Line Items</a>
+          </div>
+        </div>
+      </li>
+
+      <!-- Nav Item - Users Collapse Menu -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUsers" aria-expanded="true" aria-controls="collapseUsers">
+          <i class="fas fa-fw fa-users"></i>
+          <span>Company Users</span>
+        </a>
+        <div id="collapseUsers" class="collapse" aria-labelledby="headingUsers" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href="/company_users">All Company Users</a>
+            <a class="collapse-item" href="/roles">Roles</a>
+            <a class="collapse-item" href="/abilities">Abilities</a>
+          </div>
+        </div>
+      </li>
+
+      <!-- Nav Item - Charts -->
+      <li class="nav-item">
+        <a class="nav-link" href="/employees">
+          <i class="fas fa-fw fa-people-carry"></i>
+          <span>Employees</span></a>
+      </li>
+
+      <!-- Nav Item - Charts -->
+      <li class="nav-item">
+        <a class="nav-link" href="/reports">
+          <i class="fas fa-fw fa-file-alt"></i>
+          <span>Reports</span></a>
+      </li>
+
+      <!-- Nav Item - Charts -->
+      <li class="nav-item">
+        <a class="nav-link" href="/taxes">
+          <i class="fas fa-fw fa-landmark"></i>
+          <span>Taxes</span></a>
+      </li>
+
+      <!-- Nav Item - Accounting Collapse Menu -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAccounting" aria-expanded="true" aria-controls="collapseAccounting">
+          <i class="fas fa-fw fa-calculator"></i>
+          <span>Accounting</span>
+        </a>
+        <div id="collapseAccounting" class="collapse" aria-labelledby="headingAccounting" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <a class="collapse-item" href="/reports/chart_of_accounts">Chart of Accounts</a>
+            <a class="collapse-item" href="/reconcile">Reconcile</a>
           </div>
         </div>
       </li>
@@ -91,42 +156,8 @@
 
       <!-- Heading -->
       <div class="sidebar-heading">
-        Addons
+        Others
       </div>
-
-      <!-- Nav Item - Pages Collapse Menu -->
-      <li class="nav-item">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapsePages" aria-expanded="true" aria-controls="collapsePages">
-          <i class="fas fa-fw fa-folder"></i>
-          <span>Pages</span>
-        </a>
-        <div id="collapsePages" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-          <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Login Screens:</h6>
-            <a class="collapse-item" href="/login">Login</a>
-            <a class="collapse-item" href="/register">Register</a>
-            <a class="collapse-item" href="/forgot-password">Forgot Password</a>
-            <div class="collapse-divider"></div>
-            <h6 class="collapse-header">Other Pages:</h6>
-            <a class="collapse-item" href="/404">404 Page</a>
-            <a class="collapse-item" href="/blank">Blank Page</a>
-          </div>
-        </div>
-      </li>
-
-      <!-- Nav Item - Charts -->
-      <li class="nav-item">
-        <a class="nav-link" href="/charts">
-          <i class="fas fa-fw fa-chart-area"></i>
-          <span>Charts</span></a>
-      </li>
-
-      <!-- Nav Item - Tables -->
-      <li class="nav-item">
-        <a class="nav-link" href="/tables">
-          <i class="fas fa-fw fa-table"></i>
-          <span>Tables</span></a>
-      </li>
 
       <!-- Nav Item - Companies Collapse Menu -->
       <li class="nav-item">
@@ -322,7 +353,7 @@
       <footer class="sticky-footer bg-white">
         <div class="container my-auto">
           <div class="copyright text-center my-auto">
-            <span>Copyright &copy; Your Website 2019</span>
+            <span>Copyright &copy; InnoBooks 2020</span>
           </div>
         </div>
       </footer>
