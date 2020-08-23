@@ -77,41 +77,7 @@ class BillController extends Controller
                 'bill_number' => request('bill_number'),
             ]);
             $bill->save();
-            if (!is_null(request("category_lines.'account_id'"))) {
-                $count = count(request("category_lines.'account_id'"));
-                for ($row = 0; $row < $count; $row++) {
-                    $inputTax = 0;
-                    if (!is_null(request("category_lines.'input_tax'.".$row))) {
-                        $inputTax = request("category_lines.'input_tax'.".$row);
-                    }
-                    $categoryLine = new BillCategoryLine([
-                        'bill_id' => $bill->id,
-                        'account_id' => request("category_lines.'account_id'.".$row),
-                        'description' => request("category_lines.'description'.".$row),
-                        'amount' => request("category_lines.'amount'.".$row),
-                        'input_tax' => $inputTax
-                    ]);
-                    $categoryLine->save();
-                }
-            }
-            if (!is_null(request("item_lines.'product_id'"))) {
-                $count = count(request("item_lines.'product_id'"));
-                for ($row = 0; $row < $count; $row++) {
-                    $inputTax = 0;
-                    if (!is_null(request("item_lines.'input_tax'.".$row))) {
-                        $inputTax = request("item_lines.'input_tax'.".$row);
-                    }
-                    $itemLine = new BillItemLine([
-                        'bill_id' => $bill->id,
-                        'product_id' => request("item_lines.'product_id'.".$row),
-                        'description' => request("item_lines.'description'.".$row),
-                        'quantity' => request("item_lines.'quantity'.".$row),
-                        'amount' => request("item_lines.'amount'.".$row),
-                        'input_tax' => $inputTax
-                    ]);
-                    $itemLine->save();
-                }
-            }
+            $this->updateLines($bill);
             return redirect(route('bills.index'));
         } catch (\Exception $e) {
             return back()->with('status', $this->translateError($e))->withInput();

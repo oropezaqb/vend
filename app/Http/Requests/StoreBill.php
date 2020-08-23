@@ -49,14 +49,14 @@ class StoreBill extends FormRequest
                 'sometimes'
             ],
             "category_lines.'amount'.*" => ['sometimes'],
-            "category_lines.'input_tax'.*" => ['sometimes', 'numeric', 'min:0.00', 'nullable'],
+            "category_lines.'input_tax'.*" => ['sometimes'],
             "item_lines.'product_id'" => ['sometimes'],
             "item_lines.'product_id'.*" => [
                 'sometimes'
             ],
             "item_lines.'quantity'.*" => ['sometimes'],
             "item_lines.'amount'.*" => ['sometimes'],
-            "item_lines.'input_tax'.*" => ['sometimes', 'numeric', 'min:0.00', 'nullable'],
+            "item_lines.'input_tax'.*" => ['sometimes'],
         ];
     }
     public function withValidator($validator)
@@ -84,19 +84,38 @@ class StoreBill extends FormRequest
                 $validator->errors()->add('category_lines', 'Category line ' . ($row + 1) .
                     ': Account is invalid. Please choose among the recommended items.');
             }
-            if (is_null(request("category_lines.'amount'.".$row))) {
-                $validator->errors()->add('category_lines', 'Category line ' . ($row + 1) .
-                    ': Amount required.');
-            } else {
-                if (is_numeric(request("category_lines.'amount'.".$row))) {
-                    if (request("category_lines.'amount'.".$row) < 0.01) {
+            $this->validateCategoryAmount($validator, $row);
+            if (!is_null(request("category_lines.'input_tax'.".$row))) {
+                if (is_numeric(request("category_lines.'input_tax'.".$row))) {
+                    if (request("category_lines.'input_tax'.".$row) < 0.00) {
                         $validator->errors()->add('category_lines', 'Category line ' . ($row + 1) .
-                            ': Amount must be positive.');
+                            ': Tax must be positive.');
+                    }
+                    if (request("category_lines.'input_tax'.".$row) > request("category_lines.'amount'.".$row) * 0.12) {
+                        $validator->errors()->add('category_lines', 'Category line ' . ($row + 1) .
+                            ': Tax should not exceed 12% of line amount.');
                     }
                 } else {
                     $validator->errors()->add('category_lines', 'Category line ' . ($row + 1) .
-                        ': Amount must be a number.');
+                        ': Tax must be a number.');
                 }
+            }
+        }
+    }
+    public function validateCategoryAmount($validator, $row)
+    {
+        if (is_null(request("category_lines.'amount'.".$row))) {
+            $validator->errors()->add('category_lines', 'Category line ' . ($row + 1) .
+                ': Amount required.');
+        } else {
+            if (is_numeric(request("category_lines.'amount'.".$row))) {
+                if (request("category_lines.'amount'.".$row) < 0.01) {
+                    $validator->errors()->add('category_lines', 'Category line ' . ($row + 1) .
+                        ': Amount must be positive.');
+                }
+            } else {
+                $validator->errors()->add('category_lines', 'Category line ' . ($row + 1) .
+                    ': Amount must be a number.');
             }
         }
     }
@@ -113,9 +132,9 @@ class StoreBill extends FormRequest
             $this->validateItemAmount($validator, $row);
             if (!is_null(request("item_lines.'input_tax'.".$row))) {
                 if (is_numeric(request("item_lines.'input_tax'.".$row))) {
-                    if (request("item_lines.'input_tax'.".$row) < 0.01) {
+                    if (request("item_lines.'input_tax'.".$row) < 0.00) {
                         $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                            ': Amount must be positive.');
+                            ': Tax must be positive.');
                     }
                     if (request("item_lines.'input_tax'.".$row) > request("item_lines.'amount'.".$row) * 0.12) {
                         $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
@@ -123,7 +142,7 @@ class StoreBill extends FormRequest
                     }
                 } else {
                     $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                        ': Amount must be a number.');
+                        ': Tax must be a number.');
                 }
             }
         }

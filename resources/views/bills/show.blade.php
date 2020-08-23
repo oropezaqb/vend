@@ -471,7 +471,7 @@
                                             var b = categoryLine['description'];
                                             var c = categoryLine['amount'];
                                             var d = categoryLine['input_tax'];
-                                            var e = <?php echo json_encode(\App\Account::where('id', $categoryLine->account_id)->firstOrFail()->name); ?>;
+                                            var e = <?php echo json_encode(\App\Account::where('id', $categoryLine->account_id)->firstOrFail()->title); ?>;
                                             if(a == null) {a = "";}
                                             if(b == null) {b = "";}
                                             if(c == null) {c = "";}
