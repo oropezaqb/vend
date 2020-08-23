@@ -6,15 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    //
-
-    public function unit()
+    protected $guarded = [];
+    public function path()
     {
-        return $this->belongsTo('App\Unit');
+        return route('products.show', $this);
     }
-
-    public function material()
+    public function company()
     {
-        return $this->belongsTo('App\Material');
+        return $this->belongsTo(Company::class);
     }
 }

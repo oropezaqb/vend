@@ -21,6 +21,11 @@ Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
 
+Route::get('/suppliers/import', 'SupplierController@import')->name('suppliers.import');
+Route::post('/suppliers/upload', 'SupplierController@upload')->name('suppliers.upload');
+Route::get('/products/import', 'ProductController@import')->name('products.import');
+Route::post('/products/upload', 'ProductController@upload')->name('products.upload');
+
 Route::resources([
     'companies' => 'CompanyController',
     'applications' => 'ApplicationController',
@@ -34,6 +39,9 @@ Route::resources([
     'report_line_items' => 'ReportLineItemController',
     'journal_entries' => 'JournalEntryController',
     'postings' => 'PostingController',
+    'suppliers' => 'SupplierController',
+    'products' => 'ProductController',
+    'bills' => 'BillController',
 ]);
 
 Route::resource('queries', 'QueryController');

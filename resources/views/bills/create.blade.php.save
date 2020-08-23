@@ -1,0 +1,297 @@
+@extends('layouts.app2')
+@section('content')
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->currentCompany->company->name }} (Add a New Bill)</div>
+            <div class="card-body">
+                <div id="wrapper">
+                    <div id="page" class="container">
+                        <div class="content">
+                            <form method="POST" action="/bills">
+                                @csrf
+                                @if ($errors->any())
+                                    <div class="alert alert-danger">
+                                        <ul>
+                                            @foreach ($errors->all() as $error)
+                                                <li>{{ $error }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
+                                <datalist id="supplier_ids">
+                                    @foreach ($suppliers as $supplier)
+                                        <option data-value={{ $supplier->id }}>{{ $supplier->name }}</option>
+                                    @endforeach
+                                </datalist>
+                                <datalist id="account_ids">
+                                    @foreach ($accounts as $account)
+                                        <option data-value={{ $account->id }}>{{ $account->title }} ({{ $account->number }})</option>
+                                    @endforeach
+                                </datalist>
+                                <datalist id="product_ids">
+                                    @foreach ($products as $product)
+                                        <option data-value={{ $product->id }}>{{ $product->name }}</option>
+                                    @endforeach
+                                </datalist>
+                                <div class="form-group custom-control-inline">
+                                    <label for="supplier_id">Supplier</label>&nbsp;
+                                    <input list="supplier_ids" id="supplier_id0" onchange="setValue(this)" data-id="" class="custom-select @error('supplier_id') is-danger @enderror" required value="{!! old('supplier_name') !!}">
+                                    <datalist id="supplier_ids">
+                                        @foreach ($suppliers as $supplier)
+                                            <option data-value="{{ $supplier->id }}">{{ $supplier->name }}</option>
+                                        @endforeach
+                                    </datalist>
+                                    <input type="hidden" name="supplier_id" id="supplier_id0-hidden" value="{!! old('supplier_id') !!}">
+                                    <input type="hidden" name="supplier_name" id="name-supplier_id0-hidden" value="{!! old('supplier_name') !!}">
+                                </div>
+                                <br><br>
+                                <div class="form-group custom-control-inline">
+                                    <label for="bill_date">Bill&nbsp;date&nbsp;</label>&nbsp;
+                                    <input type="date" class="form-control @error('bill_date') is-danger @enderror" id="bill_date" name="bill_date" required value="{!! old('bill_date') !!}">
+                                </div>
+                                <div class="form-group custom-control-inline">
+                                    <label for="due_date">Due&nbsp;date&nbsp;</label>&nbsp;
+                                    <input type="date" class="form-control @error('due_date') is-danger @enderror" id="due_date" name="due_date" required value="{!! old('due_date') !!}">
+                                </div>
+                                <div class="form-group custom-control-inline">
+                                    <label for="bill_number">Bill&nbsp;no.&nbsp;</label>&nbsp;
+                                    <input type="bill_number" class="form-control" id="bill_number" name="bill_number" style="text-align: right;" required value="{!! old('bill_number') !!}">
+                                </div>
+                                <br><br>
+                                <h6 class="font-weight-bold">Category details</h6>
+                                <div class="form-group">
+                                    <table id="category_lines" style="width:100%">
+                                        <tr style="text-align: center;">
+                                            <th>
+                                                <input type="checkbox" id="myCheck" onclick="myFunction()">
+                                            </th>
+                                            <th>
+                                                <label for="category_lines['account_id'][]">Category</label>
+                                            </th>
+                                            <th>
+                                                <label for="category_lines['description'][]">Description</label>
+                                            </th>
+                                            <th>
+                                                <label for="category_lines['amount'][]">Amount</label>
+                                            </th>
+                                            <th>
+                                                <label for="category_lines['input_tax'][]">Tax</label>
+                                            </th>
+                                        <tr>
+                                    </table>
+                                </div>
+                                <br>
+                                <h6 class="font-weight-bold">Item details</h6>
+                                <div class="form-group">
+                                    <table id="item_lines" style="width:100%">
+                                        <tr style="text-align: center;">
+                                            <th>
+                                                <input type="checkbox" id="myCheck" onclick="myFunction()">
+                                            </th>
+                                            <th>
+                                                <label for="item_lines['product_id'][]">Product&#47;Service</label>
+                                            </th>
+                                            <th>
+                                                <label for="item_lines['description'][]">Description</label>
+                                            </th>
+                                            <th>
+                                                <label for="item_lines['quantity'][]">Qty</label>
+                                            </th>
+                                            <th>
+                                                <label for="item_lines['amount'][]">Amount</label>
+                                            </th>
+                                            <th>
+                                                <label for="item_lines['input_tax'][]">Tax</label>
+                                            </th>
+                                        <tr>
+                                    </table>
+                                </div>
+                                <br>
+                                <button class="btn btn-primary" type="submit">Save</button>
+                            </form>
+                            <br><br>
+                            <button id="addCategoryLines"  onclick="addCategoryLines('', '', '', '', '', '', '', '')" class="btn btn-secondary">Add Category Lines</button>&nbsp;&nbsp;
+                            <button id="deleteCategoryLines" onclick="deleteCategoryLines()" class="btn btn-secondary">Delete Category Lines</button>
+                            <br><br>
+                            <button id="addItemLines"  onclick="addItemLines('', '', '', '', '', '', '', '')" class="btn btn-secondary">Add Item Lines</button>&nbsp;&nbsp;
+                            <button id="deleteItemLines" onclick="deleteItemLines()" class="btn btn-secondary">Delete Item Lines</button>
+                            <script>
+                                var line = 0;
+                                function setValue (id) 
+                                {
+                                    var input = id,
+                                        list = input.getAttribute('list'),
+                                        options = document.querySelectorAll('#' + list + ' option'),
+                                        hiddenInput = document.getElementById(input.getAttribute('id') + '-hidden'),
+                                        hiddenInputName = document.getElementById('name-' + input.getAttribute('id') + '-hidden'),
+                                        label = input.value;
+
+                                    hiddenInputName.value = label;
+                                    hiddenInput.value = label;
+
+                                    for(var i = 0; i < options.length; i++) {
+                                        var option = options[i];
+
+                                        if(option.innerText === label) {
+                                            hiddenInput.value = option.getAttribute('data-value');
+                                            break;
+                                        }
+                                    }
+                                }
+                                function addCategoryLines(a, b, c, d, e, f, g, h) {
+
+                                    var tr = document.createElement("tr");
+                                    var table = document.getElementById("category_lines");
+                                    table.appendChild(tr);
+
+                                    var td0 = document.createElement("td");
+                                    tr.appendChild(td0);
+
+                                    var check = document.createElement("input");
+                                    check.setAttribute("type", "checkbox");
+                                    check.setAttribute("class", "deleteBox");
+                                    td0.appendChild(check);
+
+                                    var td1 = document.createElement("td");
+                                    tr.appendChild(td1);
+
+                                    var accountInput = document.createElement("input");
+                                    accountInput.setAttribute("list", "account_ids");
+                                    accountInput.setAttribute("id", "postings['account_id'][]" + line);
+                                    accountInput.setAttribute("onchange", "setValue(this)");
+                                    accountInput.setAttribute("data-id", line);
+                                    accountInput.setAttribute("class", "custom-select");
+                                    accountInput.setAttribute("required", "required");
+                                    accountInput.setAttribute("value", f);
+                                    td1.appendChild(accountInput);
+
+                                    var accountHidden = document.createElement("input");
+                                    accountHidden.setAttribute("type", "hidden");
+                                    accountHidden.setAttribute("name", "postings['account_id'][]");
+                                    accountHidden.setAttribute("id", "postings['account_id'][]" + line + "-hidden");
+                                    accountHidden.setAttribute("value", a);
+                                    td1.appendChild(accountHidden);
+
+                                    var accountHidden2 = document.createElement("input");
+                                    accountHidden2.setAttribute("type", "hidden");
+                                    accountHidden2.setAttribute("name", "postings['account_name'][]");
+                                    accountHidden2.setAttribute("id", "name-postings['account_id'][]" + line + "-hidden");
+                                    accountHidden2.setAttribute("value", f);
+                                    td1.appendChild(accountHidden2);
+
+                                    var td2 = document.createElement("td");
+                                    tr.appendChild(td2);
+
+                                    var descriptionInput = document.createElement("input");
+                                    descriptionInput.setAttribute("type", "text");
+                                    descriptionInput.setAttribute("class", "form-control");
+                                    descriptionInput.setAttribute("id", "category_lines['description'][]" + line);
+                                    descriptionInput.setAttribute("name", "category_lines['description'][]");
+                                    descriptionInput.setAttribute("style", "text-align: left;");
+                                    descriptionInput.setAttribute("value", b);
+                                    td2.appendChild(descriptionInput);
+
+                                    var td3 = document.createElement("td");
+                                    tr.appendChild(td3);
+
+                                    var amountInput = document.createElement("input");
+                                    amountInput.setAttribute("type", "number");
+                                    amountInput.setAttribute("class", "form-control");
+                                    amountInput.setAttribute("id", "category_lines['amount'][]" + line);
+                                    amountInput.setAttribute("name", "category_lines['amount'][]");
+                                    amountInput.setAttribute("step", "0.01");
+                                    amountInput.setAttribute("style", "text-align: right;");
+                                    amountInput.setAttribute("value", c);
+                                    td3.appendChild(amountInput);
+
+                                    var td4 = document.createElement("td");
+                                    tr.appendChild(td4);
+
+                                    var inputTaxInput = document.createElement("input");
+                                    inputTaxInput.setAttribute("type", "number");
+                                    inputTaxInput.setAttribute("class", "form-control");
+                                    inputTaxInput.setAttribute("id", "category_lines['input_tax'][]" + line);
+                                    inputTaxInput.setAttribute("name", "category_lines['input_tax'][]");
+                                    inputTaxInput.setAttribute("step", "0.01");
+                                    inputTaxInput.setAttribute("style", "text-align: right;");
+                                    inputTaxInput.setAttribute("value", d);
+                                    td4.appendChild(inputTaxInput);
+
+                                    line++;
+                                }
+                                function myFunction() {
+                                    var checkBox = document.getElementById("myCheck");
+                                    if (checkBox.checked == true)
+                                    {
+                                        var x = document.getElementsByClassName("deleteBox");
+                                        var i;
+                                        for (i = 0; i < x.length; i++) {
+                                            x[i].checked = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var x = document.getElementsByClassName("deleteBox");
+                                        var i;
+                                        for (i = 0; i < x.length; i++) {
+                                            x[i].checked = false;
+                                        }
+                                    }
+                                }
+                                function deleteLines () {
+                                    var x = document.getElementsByClassName("deleteBox");
+                                    var i;
+                                    for (i = 0; i < x.length; i++) {
+                                        if (x[i].checked) {
+                                            x[i].parentNode.parentNode.remove();
+                                        }
+                                    }
+                                }
+                                @if (!empty(old('category_lines')))
+                                    var a = <?php echo json_encode(old("category_lines.'account_id'")); ?>;
+                                    var b = <?php echo json_encode(old("category_lines.'description'")); ?>;
+                                    var c = <?php echo json_encode(old("category_lines.'amount'")); ?>;
+                                    var d = <?php echo json_encode(old("category_lines.'input_tax'")); ?>;
+                                    var e = <?php echo json_encode(old("category_lines.'account_name'")); ?>;
+                                    var i;
+                                    for (i = 0; i < a.length; i++)
+                                    {
+                                        if(a[i] == null) {a[i] = "";}
+                                        if(b[i] == null) {b[i] = "";}
+                                        if(c[i] == null) {c[i] = "";}
+                                        if(d[i] == null) {d[i] = "";}
+                                        if(e[i] == null) {e[i] = "";}
+                                        addLines(a[i], b[i], c[i], d[i], e[i]);
+                                    }
+                                @endif
+                                @if (!empty(old('item_lines')))
+                                    var a = <?php echo json_encode(old("item_lines.'account_id'")); ?>;
+                                    var b = <?php echo json_encode(old("item_lines.'debit'")); ?>;
+                                    var c = <?php echo json_encode(old("item_lines.'credit'")); ?>;
+                                    var d = <?php echo json_encode(old("item_lines.'subsidiary_ledger_id'")); ?>;
+                                    var e = <?php echo json_encode(old("item_lines.'report_line_item_id'")); ?>;
+                                    var f = <?php echo json_encode(old("item_lines.'account_name'")); ?>;
+                                    var g = <?php echo json_encode(old("item_lines.'subsidiary_ledger_name'")); ?>;
+                                    var h = <?php echo json_encode(old("item_lines.'report_line_item_name'")); ?>;
+                                    var i;
+                                    for (i = 0; i < a.length; i++)
+                                    {
+                                        if(a[i] == null) {a[i] = "";}
+                                        if(b[i] == null) {b[i] = "";}
+                                        if(c[i] == null) {c[i] = "";}
+                                        if(d[i] == null) {d[i] = "";}
+                                        if(e[i] == null) {e[i] = "";}
+                                        if(f[i] == null) {f[i] = "";}
+                                        if(g[i] == null) {g[i] = "";}
+                                        if(h[i] == null) {h[i] = "";}
+                                        addLines(a[i], b[i], c[i], d[i], e[i], f[i], g[i], h[i]);
+                                    }
+                                @endif
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
