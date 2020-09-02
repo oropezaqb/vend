@@ -9,7 +9,7 @@ class Posting extends Model
     protected $guarded = [];
     public function journalEntry()
     {
-        return $this->belongsToMany(JournalEntry::class);
+        return $this->belongsTo(JournalEntry::class);
     }
     public function account()
     {

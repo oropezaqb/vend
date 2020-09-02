@@ -77,16 +77,18 @@ class JournalEntryController extends Controller
         $journalEntry->save();
         if (!is_null(request("postings.'account_id'"))) {
             $count = count(request("postings.'account_id'"));
-            for ($row = 0; $row < $count; $row++) {
+            for ($row = 0; $row < $count; $row++)
+            {
                 $debit = request("postings.'debit'.".$row) - request("postings.'credit'.".$row);
                 $posting = new Posting([
+                    'company_id' => $company->id,
+                    'journal_entry_id' => $journalEntry->id,
                     'account_id' => request("postings.'account_id'.".$row),
                     'debit' => $debit,
                     'subsidiary_ledger_id' => request("postings.'subsidiary_ledger_id'.".$row),
                     'report_line_item_id' => request("postings.'report_line_item_id'.".$row)
                 ]);
                 $posting->save();
-                $journalEntry->post($posting);
             }
         }
         return redirect(route('journal_entries.index'));
@@ -119,20 +121,21 @@ class JournalEntryController extends Controller
         }
         if (!is_null(request("postings.'account_id'"))) {
             $count = count(request("postings.'account_id'"));
-            for ($row = 0; $row < $count; $row++) {
+            for ($row = 0; $row < $count; $row++)
+            {
                 $debit = request("postings.'debit'.".$row) - request("postings.'credit'.".$row);
                 $posting = new Posting([
+                    'company_id' => $company->id,
+                    'journal_entry_id' => $journalEntry->id,
                     'account_id' => request("postings.'account_id'.".$row),
                     'debit' => $debit,
                     'subsidiary_ledger_id' => request("postings.'subsidiary_ledger_id'.".$row),
                     'report_line_item_id' => request("postings.'report_line_item_id'.".$row)
                 ]);
                 $posting->save();
-                $journalEntry->post($posting);
             }
         }
-        return redirect(route('journal_entries.edit', [$journalEntry]))
-            ->with('status', 'Journal entry updated!');
+        return redirect(route('journal_entries.index'));
     }
     public function destroy(JournalEntry $journalEntry)
     {

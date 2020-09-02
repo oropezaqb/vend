@@ -13,7 +13,7 @@ class JournalEntry extends Model
     }
     public function postings()
     {
-        return $this->belongsToMany(Posting::class);
+        return $this->hasMany(Posting::class);
     }
     public function post($posting)
     {
