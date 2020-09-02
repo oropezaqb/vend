@@ -77,8 +77,7 @@ class JournalEntryController extends Controller
         $journalEntry->save();
         if (!is_null(request("postings.'account_id'"))) {
             $count = count(request("postings.'account_id'"));
-            for ($row = 0; $row < $count; $row++)
-            {
+            for ($row = 0; $row < $count; $row++) {
                 $debit = request("postings.'debit'.".$row) - request("postings.'credit'.".$row);
                 $posting = new Posting([
                     'company_id' => $company->id,
@@ -121,8 +120,7 @@ class JournalEntryController extends Controller
         }
         if (!is_null(request("postings.'account_id'"))) {
             $count = count(request("postings.'account_id'"));
-            for ($row = 0; $row < $count; $row++)
-            {
+            for ($row = 0; $row < $count; $row++) {
                 $debit = request("postings.'debit'.".$row) - request("postings.'credit'.".$row);
                 $posting = new Posting([
                     'company_id' => $company->id,
