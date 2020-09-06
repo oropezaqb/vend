@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\CurrentCompany;
 use App\Product;
+use App\Account;
+use App\Http\Requests\StoreProduct;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -35,21 +37,26 @@ class ProductController extends Controller
     }
     public function create()
     {
-        return view('products.create');
+        $company = \Auth::user()->currentCompany->company;
+        $accounts = Account::where('company_id', $company->id)->latest()->get();
+        return view('products.create', compact('accounts'));
     }
-    public function store()
+    public function store(StoreProduct $request)
     {
         try {
-            $this->validateProduct();
             $company = \Auth::user()->currentCompany->company;
             $trackQuantity = false;
-            if (request('track_quantity') == 1) {
+            if ($request->input('track_quantity') == 1) {
                 $trackQuantity = true;
             }
             $product = new Product([
                 'company_id' => $company->id,
                 'name' => request('name'),
-                'track_quantity' => $trackQuantity
+                'track_quantity' => $trackQuantity,
+                'receivable_account_id' => request('receivable_account_id'),
+                'inventory_account_id' => request('inventory_account_id'),
+                'income_account_id' => request('income_account_id'),
+                'expense_account_id' => request('expense_account_id')
             ]);
             $product->save();
             return redirect(route('products.index'));
@@ -59,30 +66,24 @@ class ProductController extends Controller
     }
     public function edit(Product $product)
     {
-        return view('products.edit', compact('product'));
+        $company = \Auth::user()->currentCompany->company;
+        $accounts = Account::where('company_id', $company->id)->latest()->get();
+        return view('products.edit', compact('product', 'accounts'));
     }
-    public function update(Product $product)
+    public function update(StoreProduct $request, Product $product)
     {
         try {
-            $this->validateProduct();
-            $trackQuantity = true;
-            if (empty(request('track_quantity'))) {
-                $trackQuantity = false;
-            }
             $product->update([
-                'name' => request('name'),
-                'track_quantity' => $trackQuantity
+                'name' => $request->input('name'),
+                'receivable_account_id' => request('receivable_account_id'),
+                'inventory_account_id' => request('inventory_account_id'),
+                'income_account_id' => request('income_account_id'),
+                'expense_account_id' => request('expense_account_id')
             ]);
             return redirect($product->path());
         } catch (\Exception $e) {
             return back()->with('status', $e->getMessage());
         }
-    }
-    public function validateProduct()
-    {
-        return request()->validate([
-            'name' => 'required'
-        ]);
     }
     public function destroy(Product $product)
     {

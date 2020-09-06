@@ -15,4 +15,20 @@ class Product extends Model
     {
         return $this->belongsTo(Company::class);
     }
+    public function receivableAccount()
+    {
+        return $this->belongsTo(Account::class);
+    }
+    public function inventoryAccount()
+    {
+        return $this->belongsTo(Account::class);
+    }
+    public function incomeAccount()
+    {
+        return $this->belongsTo(Account::class);
+    }
+    public function expenseAccount()
+    {
+        return $this->belongsTo(Account::class);
+    }
 }
