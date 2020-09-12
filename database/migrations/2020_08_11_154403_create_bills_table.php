@@ -17,19 +17,6 @@ class CreateBillsTable extends Migration
      */
     public function up()
     {
-        Schema::create('transactions', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('company_id');
-            $table->unsignedBigInteger('journal_entry_id');
-            $table->timestamps();
-            $table->foreign('company_id')
-                ->references('id')
-                ->on('companies')
-                ->onDelete('cascade');
-            $table->foreign('journal_entry_id')
-                ->references('id')
-                ->on('journal_entries');
-        });
         Schema::create('bills', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id');
@@ -37,7 +24,6 @@ class CreateBillsTable extends Migration
             $table->date('bill_date');
             $table->date('due_date');
             $table->unsignedBigInteger('bill_number');
-            $table->unsignedBigInteger('transaction_id');
             $table->unique(['company_id', 'supplier_id', 'bill_number'], 'my_unique_ref');
             $table->timestamps();
             $table->foreign('company_id')
@@ -47,9 +33,6 @@ class CreateBillsTable extends Migration
             $table->foreign('supplier_id')
                 ->references('id')
                 ->on('suppliers');
-            $table->foreign('transaction_id')
-                ->references('id')
-                ->on('transactions');
         });
         Schema::create('bill_category_lines', function (Blueprint $table) {
             $table->id();
@@ -87,7 +70,6 @@ class CreateBillsTable extends Migration
         Schema::create('purchases', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id');
-            $table->unsignedBigInteger('transaction_id');
             $table->date('date');
             $table->unsignedBigInteger('product_id');
             $table->float('quantity', 8, 2)->nullable();
@@ -97,13 +79,10 @@ class CreateBillsTable extends Migration
                 ->references('id')
                 ->on('companies')
                 ->onDelete('cascade');
-            $table->foreign('transaction_id')
-                ->references('id')
-                ->on('transactions')
-                ->onDelete('cascade');
             $table->foreign('product_id')
                 ->references('id')
                 ->on('products');
+            $table->morphs('purchasable');
         });
     }
 

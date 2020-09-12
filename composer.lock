@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "65a2bf1535ba68409ebd4a060cd017e6",
+    "content-hash": "c51fa6a55bd611d7b0f0900317409c8c",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2349,6 +2349,59 @@
                 }
             ],
             "time": "2020-07-28T16:51:01+00:00"
+        },
+        {
+            "name": "shiftonelabs/laravel-cascade-deletes",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/shiftonelabs/laravel-cascade-deletes.git",
+                "reference": "af256e3796f997b5f66d34c7ec25c2a1c560e36f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/shiftonelabs/laravel-cascade-deletes/zipball/af256e3796f997b5f66d34c7ec25c2a1c560e36f",
+                "reference": "af256e3796f997b5f66d34c7ec25c2a1c560e36f",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": ">=4.1",
+                "illuminate/events": ">=4.1",
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "~0.9",
+                "phpunit/phpunit": "~4.0",
+                "shiftonelabs/codesniffer-standard": "0.*",
+                "squizlabs/php_codesniffer": "2.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ShiftOneLabs\\LaravelCascadeDeletes\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Patrick Carlo-Hickman",
+                    "email": "patrick@shiftonelabs.com"
+                }
+            ],
+            "description": "Adds application level cascading deletes to Eloquent Models.",
+            "homepage": "https://github.com/shiftonelabs/laravel-cascade-deletes",
+            "keywords": [
+                "cascade",
+                "deletes",
+                "eloquent",
+                "laravel",
+                "lumen",
+                "model"
+            ],
+            "time": "2020-04-02T07:31:25+00:00"
         },
         {
             "name": "spatie/laravel-searchable",
@@ -5278,30 +5331,30 @@
         },
         {
             "name": "laravel/dusk",
-            "version": "v6.4.1",
+            "version": "v6.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/dusk.git",
-                "reference": "db10ac70d01f332614a54cd7f1fe4757066db7cc"
+                "reference": "be00c525f9bde15bcfec1afc4857ab26afa6b369"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/dusk/zipball/db10ac70d01f332614a54cd7f1fe4757066db7cc",
-                "reference": "db10ac70d01f332614a54cd7f1fe4757066db7cc",
+                "url": "https://api.github.com/repos/laravel/dusk/zipball/be00c525f9bde15bcfec1afc4857ab26afa6b369",
+                "reference": "be00c525f9bde15bcfec1afc4857ab26afa6b369",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "ext-zip": "*",
-                "illuminate/console": "^6.0|^7.0",
-                "illuminate/support": "^6.0|^7.0",
+                "illuminate/console": "^6.0|^7.0|^8.0",
+                "illuminate/support": "^6.0|^7.0|^8.0",
                 "nesbot/carbon": "^2.0",
                 "php": "^7.2",
                 "php-webdriver/webdriver": "^1.8.1",
                 "symfony/console": "^4.3|^5.0",
                 "symfony/finder": "^4.3|^5.0",
                 "symfony/process": "^4.3|^5.0",
-                "vlucas/phpdotenv": "^3.0|^4.0"
+                "vlucas/phpdotenv": "^3.0|^4.0|^5.0"
             },
             "require-dev": {
                 "mockery/mockery": "^1.0",
@@ -5342,7 +5395,7 @@
                 "testing",
                 "webdriver"
             ],
-            "time": "2020-07-14T18:02:46+00:00"
+            "time": "2020-09-08T16:09:25+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -6296,6 +6349,7 @@
             "keywords": [
                 "tokenizer"
             ],
+            "abandoned": true,
             "time": "2019-09-17T06:23:10+00:00"
         },
         {

@@ -23,4 +23,18 @@ class Bill extends Model
     {
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
+    public function purchases()
+    {
+        return $this->morphMany('App\Purchase', 'purchasable');
+    }
+    public function delete()
+    {
+        $res=parent::delete();
+        if ($res==true) {
+            $relations = $this->purchases;
+            foreach ($relations as $relation) {
+                $relation->delete();
+            }
+        }
+    }
 }

@@ -19,8 +19,7 @@ class CreateJournalEntriesTable extends Migration
             $table->unsignedBigInteger('company_id');
             $table->date('date');
             $table->unsignedBigInteger('document_type_id');
-            $table->unsignedBigInteger('document_number');
-            $table->unique(['company_id', 'document_type_id', 'document_number'], 'my_unique_ref');
+            $table->unsignedBigInteger('document_number')->nullable();
             $table->text('explanation');
             $table->timestamps();
             $table->foreign('company_id')
@@ -30,6 +29,7 @@ class CreateJournalEntriesTable extends Migration
             $table->foreign('document_type_id')
                 ->references('id')
                 ->on('documents');
+            $table->nullableMorphs('journalizable');
         });
         Schema::create('postings', function (Blueprint $table) {
             $table->id();

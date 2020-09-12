@@ -12,6 +12,7 @@ use JavaScript;
 use App\BillCategoryLine;
 use App\BillItemLine;
 use App\Http\Requests\StoreBill;
+use App\Purchase;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -78,6 +79,7 @@ class BillController extends Controller
             ]);
             $bill->save();
             $this->updateLines($bill);
+            $this->recordPurchases($bill);
             return redirect(route('bills.index'));
         } catch (\Exception $e) {
             return back()->with('status', $this->translateError($e))->withInput();
@@ -175,6 +177,26 @@ class BillController extends Controller
                     'input_tax' => $inputTax
                 ]);
                 $itemLine->save();
+            }
+        }
+    }
+    public function recordPurchases($bill)
+    {
+        if (!is_null(request("item_lines.'product_id'"))) {
+            $count = count(request("item_lines.'product_id'"));
+            for ($row = 0; $row < $count; $row++) {
+                $product = Product::find(request("item_lines.'product_id'.".$row));
+                if ($product->track_quantity) {
+                    $company = \Auth::user()->currentCompany->company;
+                    $purchase = new Purchase([
+                        'company_id' => $company->id,
+                        'date' => request('bill_date'),
+                        'product_id' => request("item_lines.'product_id'.".$row),
+                        'quantity' => request("item_lines.'quantity'.".$row),
+                        'amount' => request("item_lines.'amount'.".$row)
+                    ]);
+                    $bill->purchases()->save($purchase);
+                }
             }
         }
     }

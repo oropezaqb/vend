@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Purchase extends Model
 {
-    //
+    protected $guarded = [];
     public function material()
     {
         return $this->belongsTo('App\Material');
@@ -15,5 +15,9 @@ class Purchase extends Model
     public function supplier()
     {
         return $this->belongsTo('App\Supplier');
+    }
+    public function purchasable()
+    {
+        return $this->morphTo();
     }
 }
