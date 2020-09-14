@@ -7,6 +7,11 @@
                 <div id="wrapper">
                     <div id="page" class="container">
                         <div class="content">
+                            @if (session('status'))
+                                <div class="alert alert-success" role="alert">
+                                    {{ session('status') }}
+                                </div>
+                            @endif
                             <form method="POST" action="/accounts">
                                 @csrf
                                 <div class="form-group">

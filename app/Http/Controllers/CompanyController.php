@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Ability;
 use App\Role;
 use App\CurrentCompany;
+use App\Document;
 use App\Notifications\CompanyCreated;
 
 class CompanyController extends Controller
@@ -66,6 +67,8 @@ class CompanyController extends Controller
             $admin->save();
             $currentCompany = new CurrentCompany(['user_id' => $user->id, 'company_id' => $company->id]);
             $currentCompany->save();
+            Document::firstOrCreate(['name' => 'Journal Entry', 'company_id' => $company->id]);
+            Document::firstOrCreate(['name' => 'Bill', 'company_id' => $company->id]);
             \Notification::send($user, new CompanyCreated($company));
             return redirect(route('home'))
                 ->with('status', 'Company created! You may now start adding items through the navigation pane.');

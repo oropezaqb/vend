@@ -27,6 +27,10 @@ class Bill extends Model
     {
         return $this->morphMany('App\Purchase', 'purchasable');
     }
+    public function journalEntry()
+    {
+        return $this->morphOne('App\JournalEntry', 'journalizable');
+    }
     public function delete()
     {
         $res=parent::delete();

@@ -26,4 +26,8 @@ class JournalEntry extends Model
     {
         return $this->belongsTo(Document::class, 'document_type_id');
     }
+    public function journalizable()
+    {
+        return $this->morphTo();
+    }
 }

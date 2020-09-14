@@ -17,9 +17,9 @@ class CreateSubsidiaryLedgersTable extends Migration
         Schema::create('subsidiary_ledgers', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id');
-            $table->unsignedBigInteger('number');
+            $table->unsignedBigInteger('number')->nullable();
             $table->string('name');
-            $table->unique(['number', 'company_id']);
+            $table->unique(['name', 'company_id']);
             $table->timestamps();
             $table->foreign('company_id')
                 ->references('id')

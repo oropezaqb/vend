@@ -45,6 +45,12 @@ class Kernel extends HttpKernel
         'company' => [
             \App\Http\Middleware\CheckCurrentCompany::class,
         ],
+        'accountsPayable' => [
+            \App\Http\Middleware\CheckAccountsPayable::class,
+        ],
+        'inputVat' => [
+            \App\Http\Middleware\CheckInputVat::class,
+        ],
     ];
 
     /**
