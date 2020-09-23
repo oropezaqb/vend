@@ -51,6 +51,12 @@ class Kernel extends HttpKernel
         'inputVat' => [
             \App\Http\Middleware\CheckInputVat::class,
         ],
+        'accountsReceivable' => [
+            \App\Http\Middleware\CheckAccountsReceivable::class,
+        ],
+        'outputVat' => [
+            \App\Http\Middleware\CheckOutputVat::class,
+        ],
     ];
 
     /**

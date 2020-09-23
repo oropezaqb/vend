@@ -42,6 +42,8 @@ Route::resources([
     'suppliers' => 'SupplierController',
     'products' => 'ProductController',
     'bills' => 'BillController',
+    'customers' => 'CustomerController',
+    'invoices' => 'InvoiceController',
 ]);
 
 Route::resource('queries', 'QueryController');

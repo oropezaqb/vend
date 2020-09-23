@@ -53,4 +53,8 @@ class Company extends Model implements Searchable
     {
         return $this->hasMany(Product::class);
     }
+    public function customers()
+    {
+        return $this->hasMany(Customer::class);
+    }
 }
