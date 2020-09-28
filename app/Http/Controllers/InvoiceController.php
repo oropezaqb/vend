@@ -84,9 +84,7 @@ class InvoiceController extends Controller
             $this->updateLines($invoice);
             $createInvoice = new CreateInvoice();
             $createInvoice->recordSales($invoice);
-            //$createBill = new CreateBill();
-            //$createBill->recordJournalEntry($bill);
-            //$createBill->recordPurchases($bill);
+            $createInvoice->recordJournalEntry($invoice);
             return redirect(route('invoices.index'));
         } catch (\Exception $e) {
             return back()->with('status', $this->translateError($e))->withInput();
