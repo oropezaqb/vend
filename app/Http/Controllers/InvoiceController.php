@@ -35,18 +35,14 @@ class InvoiceController extends Controller
     public function index()
     {
         $company = \Auth::user()->currentCompany->company;
-        if (empty(request('customer_name')))
-        {
+        if (empty(request('customer_name'))) {
             $invoices = Invoice::where('company_id', $company->id)->latest()->get();
-        }
-        else
-        {
+        } else {
             $customer = Customer::where('name', request('customer_name'))->firstOrFail();
             $invoices = Invoice::where('company_id', $company->id)
                 ->where('customer_id', $customer->id)->latest()->get();
         }
-        if (\Route::currentRouteName() === 'invoices.index')
-        {
+        if (\Route::currentRouteName() === 'invoices.index') {
             \Request::flash();
         }
         return view('invoices.index', compact('invoices'));
@@ -57,8 +53,10 @@ class InvoiceController extends Controller
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $accounts = Account::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('invoices.show',
-            compact('invoice', 'customers', 'accounts', 'products'));
+        return view(
+            'invoices.show',
+            compact('invoice', 'customers', 'accounts', 'products')
+        );
     }
     public function create()
     {
@@ -66,8 +64,10 @@ class InvoiceController extends Controller
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $accounts = Account::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('invoices.create',
-            compact('customers', 'accounts', 'products'));
+        return view(
+            'invoices.create',
+            compact('customers', 'accounts', 'products')
+        );
     }
     public function store(StoreInvoice $request)
     {
@@ -95,18 +95,21 @@ class InvoiceController extends Controller
     public function translateError($e)
     {
         switch ($e->getCode()) {
-        case '23000':
-            if (preg_match("/for key '(.*)'/",
-              $e->getMessage(), $m)) {
-                $indexes = array(
-                  'my_unique_ref' =>
+            case '23000':
+                if (preg_match(
+                    "/for key '(.*)'/",
+                    $e->getMessage(),
+                    $m
+                )) {
+                    $indexes = array(
+                      'my_unique_ref' =>
                     array ('Invoice is already recorded.', 'invoice_number'));
-                if (isset($indexes[$m[1]])) {
-                    $this->err_flds = array($indexes[$m[1]][1] => 1);
-                    return $indexes[$m[1]][0];
+                    if (isset($indexes[$m[1]])) {
+                        $this->err_flds = array($indexes[$m[1]][1] => 1);
+                        return $indexes[$m[1]][0];
+                    }
                 }
-            }
-        break;
+                break;
         }
         return $e->getMessage();
     }
@@ -114,8 +117,7 @@ class InvoiceController extends Controller
     {
         if (!is_null(request("item_lines.'product_id'"))) {
             $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++)
-            {
+            for ($row = 0; $row < $count; $row++) {
                 $inputTax = 0;
                 if (!is_null(request("item_lines.'input_tax'.".$row))) {
                     $inputTax = request("item_lines.'input_tax'.".$row);

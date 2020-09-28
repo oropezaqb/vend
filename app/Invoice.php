@@ -25,13 +25,12 @@ class Invoice extends Model
     }
     public function delete()
     {
-       $res=parent::delete();
-       if($res==true)
-       {
+        $res=parent::delete();
+        if ($res==true) {
             $relations = $this->sales;
             foreach ($relations as $relation) {
                 $relation->delete();
             }
-       }
+        }
     }
 }

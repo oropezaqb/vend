@@ -20,12 +20,9 @@ class CustomerController extends Controller
     }
     public function index()
     {
-        if (empty(request('name')))
-        {
+        if (empty(request('name'))) {
             $customers = \Auth::user()->currentCompany->company->customers()->simplePaginate(50);
-        }
-        else
-        {
+        } else {
             $customers = \Auth::user()->currentCompany->company->customers()
                 ->where('name', 'like', '%' . request('name') . '%')->get();
         }
