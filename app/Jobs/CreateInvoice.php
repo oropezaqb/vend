@@ -88,7 +88,8 @@ class CreateInvoice
         $receivableAccount = Account::where('title', 'Accounts Receivable')->firstOrFail();
         $taxAccount = Account::where('title', 'Output VAT')->firstOrFail();
         $customer = Customer::all()->find(request('customer_id'));
-        $receivableSubsidiary = SubsidiaryLedger::where('name', $customer->name)->firstOrCreate(['name' => $customer->name, 'company_id' => $company->id]);
+        $receivableSubsidiary = SubsidiaryLedger::where('name', $customer->name)
+            ->firstOrCreate(['name' => $customer->name, 'company_id' => $company->id]);
         $journalEntry = new JournalEntry([
             'company_id' => $company->id,
             'date' => request('invoice_date'),
@@ -100,8 +101,7 @@ class CreateInvoice
         $taxAmount = 0;
         if (!is_null(request("item_lines.'product_id'"))) {
             $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++)
-            {
+            for ($row = 0; $row < $count; $row++) {
                 $inputTax = 0;
                 if (!is_null(request("item_lines.'input_tax'.".$row))) {
                     $inputTax = request("item_lines.'input_tax'.".$row);
