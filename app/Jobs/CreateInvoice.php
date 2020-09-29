@@ -11,6 +11,7 @@ use App\Document;
 use App\JournalEntry;
 use App\Posting;
 use App\SubsidiaryLedger;
+use App\Transaction;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -94,6 +95,7 @@ class CreateInvoice
             'company_id' => $company->id,
             'date' => request('invoice_date'),
             'document_type_id' => $document->id,
+            'document_number' => request('invoice_number'),
             'explanation' => 'To record sale of goods on account.'
         ]);
         $invoice->journalEntries()->save($journalEntry);
@@ -158,5 +160,15 @@ class CreateInvoice
             ]);
             $inventoryPosting->save();
         }
+    }
+    public function recordTransaction($invoice)
+    {
+        $company = \Auth::user()->currentCompany->company;
+        $transaction = new Transaction([
+            'company_id' => $company->id,
+            'type' => 'sale',
+            'date' => request('invoice_date')
+        ]);
+        $invoice->transaction()->save($transaction);
     }
 }

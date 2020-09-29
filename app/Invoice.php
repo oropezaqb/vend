@@ -27,6 +27,10 @@ class Invoice extends Model
     {
         return $this->morphMany('App\JournalEntry', 'journalizable');
     }
+    public function transaction()
+    {
+        return $this->morphOne('App\Transaction', 'transactable');
+    }
     public function delete()
     {
         $res=parent::delete();

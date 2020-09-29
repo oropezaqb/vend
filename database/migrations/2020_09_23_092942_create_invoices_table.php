@@ -84,7 +84,7 @@ class CreateInvoicesTable extends Migration
                 ->onDelete('cascade');
             $table->morphs('salable');
         });
-        Schema::create('transaction', function (Blueprint $table) {
+        Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id');
             $table->string('type');
