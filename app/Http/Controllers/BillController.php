@@ -14,10 +14,13 @@ use App\BillItemLine;
 use App\Http\Requests\StoreBill;
 use App\Purchase;
 use App\Jobs\CreateBill;
+use App\Jobs\CreateInvoice;
 use App\Document;
 use App\JournalEntry;
 use App\Posting;
 use App\SubsidiaryLedger;
+use DB;
+use App\Transaction;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -144,7 +147,55 @@ class BillController extends Controller
             foreach ($bill->itemLines as $itemLine) {
                 $itemLine->delete();
             }
+            $salesForUpdate = DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                ->where('date', '>=', request('bill_date'))->orderBy('date', 'asc')->get();
+            foreach($salesForUpdate as $saleForUpdate)
+            {
+                $transactions = Transaction::all();
+                $transaction = $transactions->find($saleForUpdate->id);
+                $invoice = $transaction->transactable;
+                foreach($invoice->journalEntry->postings as $posting)
+                {
+                    $posting->delete();
+                }
+                $invoice->journalEntry->delete();
+                $sales = $invoice->sales();
+                foreach($sales as $sale)
+                {
+                    $sale->delete();
+                }
+            }
+            foreach ($bill->purchases as $purchase) {
+                $purchase->delete();
+            }
+            $bill->journalEntry()->delete();
             $this->updateLines($bill);
+            $createBill = new CreateBill();
+            $createBill->recordJournalEntry($bill);
+            $createBill->recordPurchases($bill);
+            foreach($salesForUpdate as $saleForUpdate)
+            {
+                $transactions = Transaction::all();
+                $transaction = $transactions->find($saleForUpdate->id);
+                $invoice = $transaction->transactable;
+                $input = array();
+                $row = 0;
+                $input['customer_id'] = $invoice->customer_id;
+                $input['invoice_date'] = $invoice->invoice_date;
+                $input['invoice_number'] = $invoice->invoice_number;
+                foreach($invoice->itemLines as $itemLine)
+                {
+                    $input['item_lines']["'product_id'"][$row] = $itemLine->product_id;
+                    $input['item_lines']["'description'"][$row] = $itemLine->description;
+                    $input['item_lines']["'quantity'"][$row] = $itemLine->quantity;
+                    $input['item_lines']["'amount'"][$row] = $itemLine->amount;
+                    $input['item_lines']["'output_tax'"][$row] = $itemLine->output_tax;
+                    $row += 1;
+                }
+                $createInvoice = new CreateInvoice();
+                $createInvoice->recordSales($invoice, $input);
+                $createInvoice->recordJournalEntry($invoice, $input);
+            }
             return redirect(route('bills.edit', [$bill]))
                 ->with('status', 'Bill updated!');
         } catch (\Exception $e) {

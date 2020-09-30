@@ -52,7 +52,7 @@ class CreateInvoicesTable extends Migration
             $table->text('description')->nullable();
             $table->float('quantity', 8, 2)->nullable();
             $table->decimal('amount', 13, 2);
-            $table->decimal('input_tax', 13, 2)->default(0);
+            $table->decimal('output_tax', 13, 2)->default(0);
             $table->timestamps();
             $table->foreign('invoice_id')
                 ->references('id')

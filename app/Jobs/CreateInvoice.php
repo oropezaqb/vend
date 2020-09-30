@@ -19,31 +19,34 @@ use App\Transaction;
 
 class CreateInvoice
 {
-    public function recordSales($invoice)
+    public function recordSales($invoice, $input)
     {
-        if (!is_null(request("item_lines.'product_id'"))) {
-            $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++) {
-                $product = Product::find(request("item_lines.'product_id'.".$row));
+        $count = count($input['item_lines']["'product_id'"], 1);
+        if ($count > 0)
+        {
+            for ($row = 0; $row < $count; $row++)
+            {
+                $product = Product::find($input['item_lines']["'product_id'"][$row]);
                 if ($product->track_quantity) {
                     $numberRecorded = 0;
-                    do {
+                    do
+                    {
                         $company = \Auth::user()->currentCompany->company;
                         $purchase = $this->determinePurchaseSold($company, $product);
-                        $numberUnrecorded = request("item_lines.'quantity'.".$row) - $numberRecorded;
+                        $numberUnrecorded = $input['item_lines']["'quantity'"][$row] - $numberRecorded;
                         $quantity = $this->determineQuantitySold($company, $purchase, $numberUnrecorded);
                         $amount = $this->determineAmountSold($company, $purchase, $numberUnrecorded);
                         $sale = new Sale([
                             'company_id' => $company->id,
                             'purchase_id' => $purchase->id,
-                            'date' => request('invoice_date'),
+                            'date' => $input['invoice_date'],
                             'product_id' => $product->id,
                             'quantity' => $quantity,
                             'amount' => $amount
                         ]);
                         $invoice->sales()->save($sale);
                         $numberRecorded += $quantity;
-                    } while ($numberRecorded < request("item_lines.'quantity'.".$row));
+                    } while ($numberRecorded < $input['item_lines']["'quantity'"][$row]);
                 }
             }
         }
@@ -82,34 +85,35 @@ class CreateInvoice
             return $amountUnsold;
         }
     }
-    public function recordJournalEntry($invoice)
+    public function recordJournalEntry($invoice, $input)
     {
         $company = \Auth::user()->currentCompany->company;
         $document = Document::firstOrCreate(['name' => 'Invoice', 'company_id' => $company->id]);
         $receivableAccount = Account::where('title', 'Accounts Receivable')->firstOrFail();
         $taxAccount = Account::where('title', 'Output VAT')->firstOrFail();
-        $customer = Customer::all()->find(request('customer_id'));
-        $receivableSubsidiary = SubsidiaryLedger::where('name', $customer->name)
-            ->firstOrCreate(['name' => $customer->name, 'company_id' => $company->id]);
+        $customer = Customer::all()->find($input['customer_id']);
+        $receivableSubsidiary = SubsidiaryLedger::where('name', $customer->name)->firstOrCreate(['name' => $customer->name, 'company_id' => $company->id]);
         $journalEntry = new JournalEntry([
             'company_id' => $company->id,
-            'date' => request('invoice_date'),
+            'date' => $input['invoice_date'],
             'document_type_id' => $document->id,
-            'document_number' => request('invoice_number'),
+            'document_number' => $input['invoice_number'],
             'explanation' => 'To record sale of goods on account.'
         ]);
-        $invoice->journalEntries()->save($journalEntry);
+        $invoice->journalEntry()->save($journalEntry);
         $receivableAmount = 0;
         $taxAmount = 0;
-        if (!is_null(request("item_lines.'product_id'"))) {
-            $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++) {
+        $count = count($input['item_lines']["'product_id'"]);
+        if ($count > 0)
+        {
+            for ($row = 0; $row < $count; $row++)
+            {
                 $inputTax = 0;
-                if (!is_null(request("item_lines.'input_tax'.".$row))) {
-                    $inputTax = request("item_lines.'input_tax'.".$row);
+                if (!is_null($input['item_lines']["'output_tax'"][$row])) {
+                    $inputTax = $input['item_lines']["'output_tax'"][$row];
                 }
-                $product = Product::find(request("item_lines.'product_id'.".$row));
-                $debit = -request("item_lines.'amount'.".$row);
+                $product = Product::find($input['item_lines']["'product_id'"][$row]);
+                $debit = -$input['item_lines']["'amount'"][$row];
                 $posting = new Posting([
                     'company_id' => $company->id,
                     'journal_entry_id' => $journalEntry->id,
@@ -117,7 +121,7 @@ class CreateInvoice
                     'debit' => $debit
                 ]);
                 $posting->save();
-                $receivableAmount += request("item_lines.'amount'.".$row) + $inputTax;
+                $receivableAmount += $input['item_lines']["'amount'"][$row] + $inputTax;
                 $taxAmount -= $inputTax;
             }
         }

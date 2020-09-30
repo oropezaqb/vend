@@ -83,8 +83,9 @@ class InvoiceController extends Controller
             $invoice->save();
             $this->updateLines($invoice);
             $createInvoice = new CreateInvoice();
-            $createInvoice->recordSales($invoice);
-            $createInvoice->recordJournalEntry($invoice);
+            $input = $request->all();
+            $createInvoice->recordSales($invoice, $input);
+            $createInvoice->recordJournalEntry($invoice, $input);
             $createInvoice->recordTransaction($invoice);
             return redirect(route('invoices.index'));
         } catch (\Exception $e) {
@@ -116,10 +117,11 @@ class InvoiceController extends Controller
     {
         if (!is_null(request("item_lines.'product_id'"))) {
             $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++) {
-                $inputTax = 0;
-                if (!is_null(request("item_lines.'input_tax'.".$row))) {
-                    $inputTax = request("item_lines.'input_tax'.".$row);
+            for ($row = 0; $row < $count; $row++)
+            {
+                $outputTax = 0;
+                if (!is_null(request("item_lines.'output_tax'.".$row))) {
+                    $outputTax = request("item_lines.'output_tax'.".$row);
                 }
                 $itemLine = new InvoiceItemLine([
                     'invoice_id' => $invoice->id,
@@ -127,7 +129,7 @@ class InvoiceController extends Controller
                     'description' => request("item_lines.'description'.".$row),
                     'quantity' => request("item_lines.'quantity'.".$row),
                     'amount' => request("item_lines.'amount'.".$row),
-                    'input_tax' => $inputTax
+                    'output_tax' => $outputTax
                 ]);
                 $itemLine->save();
             }

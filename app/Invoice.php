@@ -23,9 +23,9 @@ class Invoice extends Model
     {
         return $this->morphMany('App\Sale', 'salable');
     }
-    public function journalEntries()
+    public function journalEntry()
     {
-        return $this->morphMany('App\JournalEntry', 'journalizable');
+        return $this->morphOne('App\JournalEntry', 'journalizable');
     }
     public function transaction()
     {
@@ -39,9 +39,13 @@ class Invoice extends Model
             foreach ($relations as $relation) {
                 $relation->delete();
             }
-            $journalEntries = $this->journalEntries;
-            foreach ($journalEntries as $journalEntry) {
-                $journalEntry->delete();
+            if(!is_null($this->journalEntry))
+            {
+                $this->journalEntry->delete();
+            }
+            if(!is_null($this->transaction))
+            {
+                $this->transaction->delete();
             }
         }
     }
