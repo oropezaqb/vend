@@ -22,19 +22,15 @@ class CreateInvoice
     public function recordSales($invoice, $input)
     {
         $count = count($input['item_lines']["'product_id'"], 1);
-        if ($count > 0)
-        {
-            for ($row = 0; $row < $count; $row++)
-            {
+        if ($count > 0) {
+            for ($row = 0; $row < $count; $row++) {
                 $product = Product::find($input['item_lines']["'product_id'"][$row]);
                 if ($product->track_quantity) {
                     $numberRecorded = 0;
-                    do
-                    {
+                    do {
                         $company = \Auth::user()->currentCompany->company;
                         $purchase = $this->determinePurchaseSold($company, $product);
-                        if (is_object($purchase))
-                        {
+                        if (is_object($purchase)) {
                             $numberUnrecorded = $input['item_lines']["'quantity'"][$row] - $numberRecorded;
                             $quantity = $this->determineQuantitySold($company, $purchase, $numberUnrecorded);
                             $amount = $this->determineAmountSold($company, $purchase, $numberUnrecorded);
@@ -48,9 +44,7 @@ class CreateInvoice
                             ]);
                             $invoice->sales()->save($sale);
                             $numberRecorded += $quantity;
-                        }
-                        else
-                        {
+                        } else {
                             break;
                         }
                     } while ($numberRecorded < $input['item_lines']["'quantity'"][$row]);
@@ -99,7 +93,8 @@ class CreateInvoice
         $receivableAccount = Account::where('title', 'Accounts Receivable')->firstOrFail();
         $taxAccount = Account::where('title', 'Output VAT')->firstOrFail();
         $customer = Customer::all()->find($input['customer_id']);
-        $receivableSubsidiary = SubsidiaryLedger::where('name', $customer->name)->firstOrCreate(['name' => $customer->name, 'company_id' => $company->id]);
+        $receivableSubsidiary = SubsidiaryLedger::where('name', $customer->name)
+            ->firstOrCreate(['name' => $customer->name, 'company_id' => $company->id]);
         $journalEntry = new JournalEntry([
             'company_id' => $company->id,
             'date' => $input['invoice_date'],
@@ -111,10 +106,8 @@ class CreateInvoice
         $receivableAmount = 0;
         $taxAmount = 0;
         $count = count($input['item_lines']["'product_id'"]);
-        if ($count > 0)
-        {
-            for ($row = 0; $row < $count; $row++)
-            {
+        if ($count > 0) {
+            for ($row = 0; $row < $count; $row++) {
                 $inputTax = 0;
                 if (!is_null($input['item_lines']["'output_tax'"][$row])) {
                     $inputTax = $input['item_lines']["'output_tax'"][$row];
@@ -181,5 +174,46 @@ class CreateInvoice
             'date' => request('invoice_date')
         ]);
         $invoice->transaction()->save($transaction);
+    }
+    public function updateSales($salesForUpdate)
+    {
+        foreach ($salesForUpdate as $saleForUpdate) {
+            $transactions = Transaction::all();
+            $transaction = $transactions->find($saleForUpdate->id);
+            $invoice = $transaction->transactable;
+            if (is_object($invoice->journalEntry)) {
+                foreach ($invoice->journalEntry->postings as $posting) {
+                    $posting->delete();
+                }
+                $invoice->journalEntry->delete();
+            }
+            if (is_object($invoice->sales)) {
+                $sales = $invoice->sales;
+                foreach ($sales as $sale) {
+                    $sale->delete();
+                }
+            }
+        }
+        foreach ($salesForUpdate as $saleForUpdate) {
+            $transactions = Transaction::all();
+            $transaction = $transactions->find($saleForUpdate->id);
+            $invoice = $transaction->transactable;
+            $input = array();
+            $row = 0;
+            $input['customer_id'] = $invoice->customer_id;
+            $input['invoice_date'] = $invoice->invoice_date;
+            $input['invoice_number'] = $invoice->invoice_number;
+            foreach ($invoice->itemLines as $itemLine) {
+                $input['item_lines']["'product_id'"][$row] = $itemLine->product_id;
+                $input['item_lines']["'description'"][$row] = $itemLine->description;
+                $input['item_lines']["'quantity'"][$row] = $itemLine->quantity;
+                $input['item_lines']["'amount'"][$row] = $itemLine->amount;
+                $input['item_lines']["'output_tax'"][$row] = $itemLine->output_tax;
+                $row += 1;
+            }
+            $createInvoice = new CreateInvoice();
+            $createInvoice->recordSales($invoice, $input);
+            $createInvoice->recordJournalEntry($invoice, $input);
+        }
     }
 }

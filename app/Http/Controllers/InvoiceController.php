@@ -88,51 +88,7 @@ class InvoiceController extends Controller
                 $createInvoice->recordTransaction($invoice);
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
                     ->where('date', '>=', request('invoice_date'))->orderBy('date', 'asc')->get();
-                foreach($salesForUpdate as $saleForUpdate)
-                {
-                    $transactions = Transaction::all();
-                    $transaction = $transactions->find($saleForUpdate->id);
-                    $invoice = $transaction->transactable;
-                    if (is_object($invoice->journalEntry))
-                    {
-                        foreach($invoice->journalEntry->postings as $posting)
-                        {
-                            $posting->delete();
-                        }
-                        $invoice->journalEntry->delete();
-                    }
-                    if (is_object($invoice->sales))
-                    {
-                        $sales = $invoice->sales;
-                        foreach($sales as $sale)
-                        {
-                            $sale->delete();
-                        }
-                    }
-                }
-                foreach($salesForUpdate as $saleForUpdate)
-                {
-                    $transactions = Transaction::all();
-                    $transaction = $transactions->find($saleForUpdate->id);
-                    $invoice = $transaction->transactable;
-                    $input = array();
-                    $row = 0;
-                    $input['customer_id'] = $invoice->customer_id;
-                    $input['invoice_date'] = $invoice->invoice_date;
-                    $input['invoice_number'] = $invoice->invoice_number;
-                    foreach($invoice->itemLines as $itemLine)
-                    {
-                        $input['item_lines']["'product_id'"][$row] = $itemLine->product_id;
-                        $input['item_lines']["'description'"][$row] = $itemLine->description;
-                        $input['item_lines']["'quantity'"][$row] = $itemLine->quantity;
-                        $input['item_lines']["'amount'"][$row] = $itemLine->amount;
-                        $input['item_lines']["'output_tax'"][$row] = $itemLine->output_tax;
-                        $row += 1;
-                    }
-                    $createInvoice = new CreateInvoice();
-                    $createInvoice->recordSales($invoice, $input);
-                    $createInvoice->recordJournalEntry($invoice, $input);
-                }
+                $createInvoice->updateSales($salesForUpdate);
             });
             return redirect(route('invoices.index'));
         } catch (\Exception $e) {
@@ -164,8 +120,7 @@ class InvoiceController extends Controller
     {
         if (!is_null(request("item_lines.'product_id'"))) {
             $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++)
-            {
+            for ($row = 0; $row < $count; $row++) {
                 $outputTax = 0;
                 if (!is_null(request("item_lines.'output_tax'.".$row))) {
                     $outputTax = request("item_lines.'output_tax'.".$row);

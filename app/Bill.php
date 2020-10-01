@@ -34,14 +34,12 @@ class Bill extends Model
     public function delete()
     {
         $res = parent::delete();
-        if ($res==true)
-        {
+        if ($res==true) {
             $relations = $this->purchases;
             foreach ($relations as $relation) {
                 $relation->delete();
             }
-            if(!is_null($this->journalEntry))
-            {
+            if (!is_null($this->journalEntry)) {
                 $this->journalEntry->delete();
             }
         }

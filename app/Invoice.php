@@ -39,12 +39,10 @@ class Invoice extends Model
             foreach ($relations as $relation) {
                 $relation->delete();
             }
-            if(!is_null($this->journalEntry))
-            {
+            if (!is_null($this->journalEntry)) {
                 $this->journalEntry->delete();
             }
-            if(!is_null($this->transaction))
-            {
+            if (!is_null($this->transaction)) {
                 $this->transaction->delete();
             }
         }
