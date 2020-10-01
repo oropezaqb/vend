@@ -83,8 +83,8 @@ class InvoiceController extends Controller
                     'invoice_number' => request('invoice_number'),
                 ]);
                 $invoice->save();
-                $this->updateLines($invoice);
                 $createInvoice = new CreateInvoice();
+                $createInvoice->updateLines($invoice);
                 $createInvoice->recordTransaction($invoice);
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
                     ->where('date', '>=', request('invoice_date'))->orderBy('date', 'asc')->get();
@@ -116,30 +116,64 @@ class InvoiceController extends Controller
         }
         return $e->getMessage();
     }
-    public function updateLines($invoice)
+    public function edit(Invoice $invoice)
     {
-        if (!is_null(request("item_lines.'product_id'"))) {
-            $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++) {
-                $outputTax = 0;
-                if (!is_null(request("item_lines.'output_tax'.".$row))) {
-                    $outputTax = request("item_lines.'output_tax'.".$row);
-                }
-                $itemLine = new InvoiceItemLine([
-                    'invoice_id' => $invoice->id,
-                    'product_id' => request("item_lines.'product_id'.".$row),
-                    'description' => request("item_lines.'description'.".$row),
-                    'quantity' => request("item_lines.'quantity'.".$row),
-                    'amount' => request("item_lines.'amount'.".$row),
-                    'output_tax' => $outputTax
+        $company = \Auth::user()->currentCompany->company;
+        $customers = Customer::where('company_id', $company->id)->latest()->get();
+        $products = Product::where('company_id', $company->id)->latest()->get();
+        return view(
+            'invoices.edit',
+            compact('invoice', 'customers', 'products')
+        );
+    }
+    public function update(StoreInvoice $request, Invoice $invoice)
+    {
+        try {
+            \DB::transaction(function () use ($request, $invoice) {
+                $company = \Auth::user()->currentCompany->company;
+                $oldDate = $invoice->invoice_date;
+                $newDate = request('invoice_date');
+                $invoice->update([
+                    'company_id' => $company->id,
+                    'customer_id' => request('customer_id'),
+                    'invoice_date' => request('invoice_date'),
+                    'due_date' => request('due_date'),
+                    'invoice_number' => request('invoice_number'),
                 ]);
-                $itemLine->save();
-            }
+                $invoice->save();
+                $changeDate = $newDate;
+                if ($oldDate < $newDate) {
+                    $changeDate = $oldDate;
+                }
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                    ->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
+                $invoice->journalEntry()->delete();
+                $createInvoice = new CreateInvoice();
+                $createInvoice->deleteInvoiceDetails($invoice);
+                $createInvoice->updateLines($invoice);
+                $createInvoice->updateSales($salesForUpdate);
+            });
+            return redirect(route('invoices.edit', [$invoice]))
+                ->with('status', 'Invoice updated!');
+        } catch (\Exception $e) {
+            return back()->with('status', $this->translateError($e))->withInput();
         }
     }
     public function destroy(Invoice $invoice)
     {
-        $invoice->delete();
-        return redirect(route('invoices.index'));
+        try {
+            \DB::transaction(function () use ($invoice) {
+                $company = \Auth::user()->currentCompany->company;
+                $invoiceDate = $invoice->invoice_date;
+                $invoice->delete();
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                    ->where('date', '>=', $invoiceDate)->orderBy('date', 'asc')->get();
+                $createInvoice = new CreateInvoice();
+                $createInvoice->updateSales($salesForUpdate);
+            });
+            return redirect(route('invoices.index'));
+        } catch (\Exception $e) {
+            return back()->with('status', $this->translateError($e))->withInput();
+        }
     }
 }
