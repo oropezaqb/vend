@@ -33,19 +33,26 @@ class CreateInvoice
                     {
                         $company = \Auth::user()->currentCompany->company;
                         $purchase = $this->determinePurchaseSold($company, $product);
-                        $numberUnrecorded = $input['item_lines']["'quantity'"][$row] - $numberRecorded;
-                        $quantity = $this->determineQuantitySold($company, $purchase, $numberUnrecorded);
-                        $amount = $this->determineAmountSold($company, $purchase, $numberUnrecorded);
-                        $sale = new Sale([
-                            'company_id' => $company->id,
-                            'purchase_id' => $purchase->id,
-                            'date' => $input['invoice_date'],
-                            'product_id' => $product->id,
-                            'quantity' => $quantity,
-                            'amount' => $amount
-                        ]);
-                        $invoice->sales()->save($sale);
-                        $numberRecorded += $quantity;
+                        if (is_object($purchase))
+                        {
+                            $numberUnrecorded = $input['item_lines']["'quantity'"][$row] - $numberRecorded;
+                            $quantity = $this->determineQuantitySold($company, $purchase, $numberUnrecorded);
+                            $amount = $this->determineAmountSold($company, $purchase, $numberUnrecorded);
+                            $sale = new Sale([
+                                'company_id' => $company->id,
+                                'purchase_id' => $purchase->id,
+                                'date' => $input['invoice_date'],
+                                'product_id' => $product->id,
+                                'quantity' => $quantity,
+                                'amount' => $amount
+                            ]);
+                            $invoice->sales()->save($sale);
+                            $numberRecorded += $quantity;
+                        }
+                        else
+                        {
+                            break;
+                        }
                     } while ($numberRecorded < $input['item_lines']["'quantity'"][$row]);
                 }
             }

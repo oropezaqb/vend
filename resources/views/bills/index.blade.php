@@ -9,6 +9,11 @@
                         id="page"
                         class="container"
                     >
+                        @if (session('status'))
+                            <div class="alert alert-success" role="alert">
+                                {{ session('status') }}
+                            </div>
+                        @endif
                         <h6 class="font-weight-bold">Search</h6>
                         <form method="GET" action="/bills">
                             @csrf

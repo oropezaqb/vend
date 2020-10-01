@@ -14,6 +14,7 @@ use App\Http\Requests\StoreInvoice;
 use App\Purchase;
 use App\Sale;
 use App\Jobs\CreateInvoice;
+use App\Transaction;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -72,21 +73,67 @@ class InvoiceController extends Controller
     public function store(StoreInvoice $request)
     {
         try {
-            $company = \Auth::user()->currentCompany->company;
-            $invoice = new Invoice([
-                'company_id' => $company->id,
-                'customer_id' => request('customer_id'),
-                'invoice_date' => request('invoice_date'),
-                'due_date' => request('due_date'),
-                'invoice_number' => request('invoice_number'),
-            ]);
-            $invoice->save();
-            $this->updateLines($invoice);
-            $createInvoice = new CreateInvoice();
-            $input = $request->all();
-            $createInvoice->recordSales($invoice, $input);
-            $createInvoice->recordJournalEntry($invoice, $input);
-            $createInvoice->recordTransaction($invoice);
+            \DB::transaction(function () use ($request) {
+                $company = \Auth::user()->currentCompany->company;
+                $invoice = new Invoice([
+                    'company_id' => $company->id,
+                    'customer_id' => request('customer_id'),
+                    'invoice_date' => request('invoice_date'),
+                    'due_date' => request('due_date'),
+                    'invoice_number' => request('invoice_number'),
+                ]);
+                $invoice->save();
+                $this->updateLines($invoice);
+                $createInvoice = new CreateInvoice();
+                $createInvoice->recordTransaction($invoice);
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                    ->where('date', '>=', request('invoice_date'))->orderBy('date', 'asc')->get();
+                foreach($salesForUpdate as $saleForUpdate)
+                {
+                    $transactions = Transaction::all();
+                    $transaction = $transactions->find($saleForUpdate->id);
+                    $invoice = $transaction->transactable;
+                    if (is_object($invoice->journalEntry))
+                    {
+                        foreach($invoice->journalEntry->postings as $posting)
+                        {
+                            $posting->delete();
+                        }
+                        $invoice->journalEntry->delete();
+                    }
+                    if (is_object($invoice->sales))
+                    {
+                        $sales = $invoice->sales;
+                        foreach($sales as $sale)
+                        {
+                            $sale->delete();
+                        }
+                    }
+                }
+                foreach($salesForUpdate as $saleForUpdate)
+                {
+                    $transactions = Transaction::all();
+                    $transaction = $transactions->find($saleForUpdate->id);
+                    $invoice = $transaction->transactable;
+                    $input = array();
+                    $row = 0;
+                    $input['customer_id'] = $invoice->customer_id;
+                    $input['invoice_date'] = $invoice->invoice_date;
+                    $input['invoice_number'] = $invoice->invoice_number;
+                    foreach($invoice->itemLines as $itemLine)
+                    {
+                        $input['item_lines']["'product_id'"][$row] = $itemLine->product_id;
+                        $input['item_lines']["'description'"][$row] = $itemLine->description;
+                        $input['item_lines']["'quantity'"][$row] = $itemLine->quantity;
+                        $input['item_lines']["'amount'"][$row] = $itemLine->amount;
+                        $input['item_lines']["'output_tax'"][$row] = $itemLine->output_tax;
+                        $row += 1;
+                    }
+                    $createInvoice = new CreateInvoice();
+                    $createInvoice->recordSales($invoice, $input);
+                    $createInvoice->recordJournalEntry($invoice, $input);
+                }
+            });
             return redirect(route('invoices.index'));
         } catch (\Exception $e) {
             return back()->with('status', $this->translateError($e))->withInput();
