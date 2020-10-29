@@ -31,8 +31,11 @@
 
       <!-- Sidebar - Brand -->
       <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
-        <div class="sidebar-brand-icon rotate-n-15">
-          <i class="fas fa-laugh-wink"></i>
+        <div class="sidebar-brand-icon">
+          <!-- <i class="fas fa-laugh-wink"></i> -->
+          <img
+            style="height: 2rem; width: 2rem; background-color: white;"
+          src="{{ asset('img/inno.png') }}" alt="">
         </div>
         <div class="sidebar-brand-text mx-3">InnoBooks</div>
       </a>
@@ -40,11 +43,43 @@
       <!-- Divider -->
       <hr class="sidebar-divider my-0">
 
-      <!-- Nav Item - Dashboard -->
-      <li class="nav-item active">
-        <a class="nav-link" href="/home">
-          <i class="fas fa-fw fa-tachometer-alt"></i>
-          <span>Dashboard</span></a>
+      <!-- Nav Item - New -->
+      <li class="nav-item">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+          <i class="fas fa-fw fa-plus"></i>
+          <span>New</span>
+        </a>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">Customers</h6>
+            <a class="collapse-item" href="#">Invoice</a>
+            <a class="collapse-item" href="#">Receive payment</a>
+            <a class="collapse-item" href="#">Estimate</a>
+            <a class="collapse-item" href="#">Credit note</a>
+            <a class="collapse-item" href="#">Sales receipt</a>
+            <a class="collapse-item" href="#">Refund receipt</a>
+            <a class="collapse-item" href="#">Delayed credit</a>
+            <a class="collapse-item" href="#">Delayed charge</a>
+            <h6 class="collapse-header">Suppliers</h6>
+            <a class="collapse-item" href="#">Expense</a>
+            <a class="collapse-item" href="#">Cheque</a>
+            <a class="collapse-item" href="#">Bill</a>
+            <a class="collapse-item" href="#">Pay bills</a>
+            <a class="collapse-item" href="#">Purchase order</a>
+            <a class="collapse-item" href="#">Supplier credit</a>
+            <a class="collapse-item" href="#">Credit card credit</a>
+            <h6 class="collapse-header">Employees</h6>
+            <a class="collapse-item" href="#">Single time activity</a>
+            <a class="collapse-item" href="#">Weekly timesheet</a>
+            <h6 class="collapse-header">Other</h6>
+            <a class="collapse-item" href="#">Bank deposit</a>
+            <a class="collapse-item" href="#">Transfer</a>
+            <a class="collapse-item" href="#">Journal entry</a>
+            <a class="collapse-item" href="#">Statement</a>
+            <a class="collapse-item" href="#">Inventory qty adjustment</a>
+            <a class="collapse-item" href="#">Paydown credit card</a>
+          </div>
+        </div>
       </li>
 
       <!-- Divider -->
@@ -54,6 +89,13 @@
       <div class="sidebar-heading">
         Main
       </div>
+
+      <!-- Nav Item - Dashboard Collapse Menu -->
+      <li class="nav-item">
+        <a class="nav-link" href="/home">
+          <i class="fas fa-fw fa-tachometer-alt"></i>
+          <span>Dashboard</span></a>
+      </li>
 
       <!-- Nav Item - Expenses Collapse Menu -->
       <li class="nav-item">

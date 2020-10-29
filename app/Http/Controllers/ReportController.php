@@ -84,12 +84,13 @@ class ReportController extends Controller
         $date = DateTime::createFromFormat('Y-m-d', "$request->date");
         $query->date = 'As of ' . date_format($date, 'M d, Y');
         $db = new DbAccess();
-        $stmt = $db->query("SELECT accounts.title, SUM(debit) debit FROM journal_entries
-            RIGHT JOIN journal_entry_posting ON journal_entries.id = journal_entry_posting.journal_entry_id
-            RIGHT JOIN postings ON journal_entry_posting.posting_id = postings.id
+        $stmt = $db->query("SELECT accounts.title, accounts.type AS theType, SUM(debit) debit
+            FROM journal_entries
+            RIGHT JOIN postings ON journal_entries.id = postings.journal_entry_id
             RIGHT JOIN accounts ON postings.account_id = accounts.id
             WHERE accounts.company_id=" . auth()->user()->currentCompany->company->id . "
-            AND journal_entries.date<=". "'" . request('date'). "'" ." GROUP BY accounts.title;");
+            AND journal_entries.date<=". "'" . request('date'). "'" ." GROUP BY accounts.title
+            ORDER BY theType ASC;");
         $headings = array('Account Title', 'Debit', 'Credit');
         return view('reports.trial_balance.screen', compact('query', 'stmt', 'headings'));
     }

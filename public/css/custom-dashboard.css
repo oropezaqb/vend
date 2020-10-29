@@ -1,0 +1,17 @@
+/* Columns */
+div.dropdown-multicol2{
+    width: inherit;
+    min-width: 200px;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    display: inline-block;
+    background: #FFFFFF;
+    transition: none;
+}
+div.dropdown-multicol2>div.dropdown-col{
+    display: table-cell;
+    vertical-align: top;
+    word-wrap: break-word;
+    min-width: 224px;
+    margin: 0 4px;
+}
