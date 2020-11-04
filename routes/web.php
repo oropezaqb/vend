@@ -44,6 +44,8 @@ Route::resources([
     'bills' => 'BillController',
     'customers' => 'CustomerController',
     'invoices' => 'InvoiceController',
+    'received_payments' => 'ReceivedPaymentController',
+    'sales_receipts' => 'SalesReceiptController',
 ]);
 
 Route::resource('queries', 'QueryController');

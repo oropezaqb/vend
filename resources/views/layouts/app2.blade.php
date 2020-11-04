@@ -52,8 +52,8 @@
         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
             <h6 class="collapse-header">Customers</h6>
-            <a class="collapse-item" href="#">Invoice</a>
-            <a class="collapse-item" href="#">Receive payment</a>
+            <a class="collapse-item" href="invoices">Invoice</a>
+            <a class="collapse-item" href="received_payments">Receive payment</a>
             <a class="collapse-item" href="#">Estimate</a>
             <a class="collapse-item" href="#">Credit note</a>
             <a class="collapse-item" href="#">Sales receipt</a>

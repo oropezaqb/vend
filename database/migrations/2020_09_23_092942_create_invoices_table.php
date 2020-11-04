@@ -32,7 +32,7 @@ class CreateInvoicesTable extends Migration
             $table->id();
             $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('customer_id');
-            $table->date('invoice_date');
+            $table->date('date');
             $table->date('due_date');
             $table->unsignedBigInteger('invoice_number');
             $table->timestamps();
