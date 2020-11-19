@@ -2,7 +2,7 @@
 @section ('content')
     <div class="col-md-12">
         <div class="card">
-            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->currentCompany->company->name }} (Invoices)</div>
+            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->currentCompany->company->name }} (Received Payments)</div>
             <div class="card-body">
                 <div id="wrapper">
                     <div
@@ -10,7 +10,7 @@
                         class="container"
                     >
                         <h6 class="font-weight-bold">Search</h6>
-                        <form method="GET" action="/invoices">
+                        <form method="GET" action="/received_payments">
                             @csrf
                             <div class="form-group">
                                 <label for="customer_name">Customer Name: </label>
@@ -28,23 +28,23 @@
                         </form>
                         <p></p>
                         <h6 class="font-weight-bold">Add</h6>
-                        <p>Want to record a new invoice? Click <a href="{{ url('/invoices/create') }}">here</a>!</p>
+                        <p>Want to record a new receipt of payment? Click <a href="{{ url('/received_payments/create') }}">here</a>!</p>
                         <p></p>
                         <h6 class="font-weight-bold">List</h6>
-                        @forelse ($invoices as $invoice)
+                        @forelse ($receivedPayments as $receivedPayment)
                             <div id="content">
                                 <div id="title">
-                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '{{ $invoice->path() }}';">View</button></div>
-                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '/invoices/{{ $invoice->id }}/edit';">Edit</button></div>
-                                    <div style="display:inline-block;"><form method="POST" action="/invoices/{{ $invoice->id }}">
+                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '{{ $receivedPayment->path() }}';">View</button></div>
+                                    <div style="display:inline-block;"><button class="btn btn-link" onclick="location.href = '/received_payments/{{ $receivedPayment->id }}/edit';">Edit</button></div>
+                                    <div style="display:inline-block;"><form method="POST" action="/received_payments/{{ $receivedPayment->id }}">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-link" type="submit">Delete</button>
-                                    </form></div><div style="display:inline-block;">&nbsp;&nbsp;{{ $invoice->date }}, {{ $invoice->customer->name }}, Invoice no. {{ $invoice->invoice_number }}</div>
+                                    </form></div><div style="display:inline-block;">&nbsp;&nbsp;{{ $salesReceipt->date }}, {{ $receivedPayment->customer->name }}, Received Payment no. {{ $receivedPayment->number }}</div>
                                 </div>
                             </div>
                         @empty
-                            <p>No invoices recorded yet.</p>
+                            <p>No receipt of payment recorded yet.</p>
                         @endforelse
                     </div>
                 </div>

@@ -38,7 +38,7 @@ class CreateInvoice
                             $sale = new Sale([
                                 'company_id' => $company->id,
                                 'purchase_id' => $purchase->id,
-                                'date' => $input['invoice_date'],
+                                'date' => $input['date'],
                                 'product_id' => $product->id,
                                 'quantity' => $quantity,
                                 'amount' => $amount
@@ -98,7 +98,7 @@ class CreateInvoice
             ->firstOrCreate(['name' => $customer->name, 'company_id' => $company->id]);
         $journalEntry = new JournalEntry([
             'company_id' => $company->id,
-            'date' => $input['invoice_date'],
+            'date' => $input['date'],
             'document_type_id' => $document->id,
             'document_number' => $input['invoice_number'],
             'explanation' => 'To record sale of goods on account.'
@@ -172,7 +172,7 @@ class CreateInvoice
         $transaction = new Transaction([
             'company_id' => $company->id,
             'type' => 'sale',
-            'date' => request('invoice_date')
+            'date' => request('date')
         ]);
         $invoice->transaction()->save($transaction);
     }
@@ -202,7 +202,7 @@ class CreateInvoice
             $input = array();
             $row = 0;
             $input['customer_id'] = $invoice->customer_id;
-            $input['invoice_date'] = $invoice->invoice_date;
+            $input['date'] = $invoice->date;
             $input['invoice_number'] = $invoice->invoice_number;
             foreach ($invoice->itemLines as $itemLine) {
                 $input['item_lines']["'product_id'"][$row] = $itemLine->product_id;

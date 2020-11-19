@@ -47,8 +47,8 @@
                                 </div>
                                 <br><br>
                                 <div class="form-group custom-control-inline">
-                                    <label for="invoice_date">Invoice&nbsp;date&nbsp;</label>&nbsp;
-                                    <input type="date" class="form-control @error('invoice_date') is-danger @enderror" id="invoice_date" name="invoice_date" required value="{!! old('invoice_date', $invoice->invoice_date) !!}">
+                                    <label for="date">Invoice&nbsp;date&nbsp;</label>&nbsp;
+                                    <input type="date" class="form-control @error('date') is-danger @enderror" id="date" name="date" required value="{!! old('date', $invoice->date) !!}">
                                 </div>
                                 <div class="form-group custom-control-inline">
                                     <label for="due_date">Due&nbsp;date&nbsp;</label>&nbsp;

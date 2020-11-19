@@ -41,7 +41,7 @@ class StoreInvoice extends FormRequest
     {
         return [
             'customer_id' => ['required', 'exists:App\Customer,id'],
-            'invoice_date' => ['required', 'date'],
+            'date' => ['required', 'date'],
             'due_date' => ['required', 'date'],
             'invoice_number' => ['required', 'min:1'],
             "item_lines.'product_id'" => ['sometimes'],

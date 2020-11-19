@@ -11,6 +11,7 @@ use App\JournalEntry;
 use App\Posting;
 use App\SubsidiaryLedger;
 use App\BillItemLine;
+use App\BillCategoryLine;
 
 class CreateBill
 {

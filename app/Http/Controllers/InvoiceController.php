@@ -78,7 +78,7 @@ class InvoiceController extends Controller
                 $invoice = new Invoice([
                     'company_id' => $company->id,
                     'customer_id' => request('customer_id'),
-                    'invoice_date' => request('invoice_date'),
+                    'date' => request('date'),
                     'due_date' => request('due_date'),
                     'invoice_number' => request('invoice_number'),
                 ]);
@@ -87,7 +87,7 @@ class InvoiceController extends Controller
                 $createInvoice->updateLines($invoice);
                 $createInvoice->recordTransaction($invoice);
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
-                    ->where('date', '>=', request('invoice_date'))->orderBy('date', 'asc')->get();
+                    ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
                 $createInvoice->updateSales($salesForUpdate);
             });
             return redirect(route('invoices.index'));
@@ -131,12 +131,12 @@ class InvoiceController extends Controller
         try {
             \DB::transaction(function () use ($request, $invoice) {
                 $company = \Auth::user()->currentCompany->company;
-                $oldDate = $invoice->invoice_date;
-                $newDate = request('invoice_date');
+                $oldDate = $invoice->date;
+                $newDate = request('date');
                 $invoice->update([
                     'company_id' => $company->id,
                     'customer_id' => request('customer_id'),
-                    'invoice_date' => request('invoice_date'),
+                    'date' => request('date'),
                     'due_date' => request('due_date'),
                     'invoice_number' => request('invoice_number'),
                 ]);
@@ -164,7 +164,7 @@ class InvoiceController extends Controller
         try {
             \DB::transaction(function () use ($invoice) {
                 $company = \Auth::user()->currentCompany->company;
-                $invoiceDate = $invoice->invoice_date;
+                $invoiceDate = $invoice->date;
                 $invoice->delete();
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
                     ->where('date', '>=', $invoiceDate)->orderBy('date', 'asc')->get();
