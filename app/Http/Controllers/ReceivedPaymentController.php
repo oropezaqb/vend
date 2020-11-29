@@ -52,7 +52,6 @@ class ReceivedPaymentController extends Controller
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $accounts = Account::where('company_id', $company->id)->latest()->get();
-        $invoices = Invoice::where('company_id', $company->id)->latest()->get();
         return view('received_payments.create',
             compact('customers', 'accounts'));
     }

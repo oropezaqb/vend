@@ -25,7 +25,7 @@ Route::get('/suppliers/import', 'SupplierController@import')->name('suppliers.im
 Route::post('/suppliers/upload', 'SupplierController@upload')->name('suppliers.upload');
 Route::get('/products/import', 'ProductController@import')->name('products.import');
 Route::post('/products/upload', 'ProductController@upload')->name('products.upload');
-Route::post('ajax-request', 'AjaxController@getInvoices');
+Route::post('/get_invoices', 'AjaxController@getInvoices');
 
 Route::resources([
     'companies' => 'CompanyController',

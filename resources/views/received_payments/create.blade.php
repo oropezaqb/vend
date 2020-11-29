@@ -35,7 +35,7 @@
                                 </datalist>
                                 <div class="form-group custom-control-inline">
                                     <label for="customer_id">Customer</label>&nbsp;
-                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this)" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}">
+                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this); getInvoices(this);" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}">
                                     <datalist id="customer_ids">
                                         @foreach ($customers as $customer)
                                             <option data-value="{{ $customer->id }}">{{ $customer->name }}</option>
@@ -99,24 +99,27 @@
                                 <br><br><br>
                                 <button class="btn btn-primary" type="submit" style="float: right; clear: both;">Save</button>
                             </form>
+      <script src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js">
+      </script>
                             <script>
                                 var line = 0;
                                 var line2 = 0;
-function showCustomer(str) {
-  var xhttp;
-  if (str == "") {
-    document.getElementById("txtHint").innerHTML = "";
-    return;
-  }
-  xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState == 4 && this.status == 200) {
-    document.getElementById("txtHint").innerHTML = this.responseText;
-    }
-  };
-  xhttp.open("GET", "getcustomer.php?q="+str, true);
-  xhttp.send();
-}
+                                var invoice_ids = new Array();
+         function getInvoices(id) {
+            $.ajax({
+               type:'POST',
+               url:'/get_invoices',
+               data:'_token = <?php echo csrf_token() ?>',
+               success:function(data) {
+                  invoice_ids = data.invoices;
+               }
+            });
+            displayInvoices();
+         }
+                                function displayInvoices()
+                                {
+                                    var_dump(invoice_ids);
+                                }
                                 function setValue (id) 
                                 {
                                     var input = id,
