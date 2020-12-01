@@ -35,7 +35,7 @@
                                 </datalist>
                                 <div class="form-group custom-control-inline">
                                     <label for="customer_id">Customer</label>&nbsp;
-                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this); getInvoices(this);" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}">
+                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this); getInvoices();" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}">
                                     <datalist id="customer_ids">
                                         @foreach ($customers as $customer)
                                             <option data-value="{{ $customer->id }}">{{ $customer->name }}</option>
@@ -99,28 +99,38 @@
                                 <br><br><br>
                                 <button class="btn btn-primary" type="submit" style="float: right; clear: both;">Save</button>
                             </form>
-      <script src = "https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js">
-      </script>
                             <script>
                                 var line = 0;
                                 var line2 = 0;
                                 var invoice_ids = new Array();
-         function getInvoices(id) {
-            $.ajax({
-               type:'POST',
-               url:'/get_invoices',
-               data:'_token = <?php echo csrf_token() ?>',
-               success:function(data) {
-                  invoice_ids = data.invoices;
-               }
-            });
-            displayInvoices();
-         }
+                                function getInvoices() {
+                                  var customer_id = document.getElementById('customer_id0-hidden').value;
+                                  let _token = $('meta[name="csrf-token"]').attr('content');
+                                  $.ajaxSetup({
+                                    headers: {
+                                      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                    }
+                                  });
+                                  $.ajax({
+                                    type:'POST',
+                                    url:'/received_payments/ajax-request',
+                                    data: {_token: _token, customer_id: customer_id},
+                                    dataType: 'json',
+                                    success:function(data) {
+                                      console.log(data.id);
+                                      invoice_ids = data.invoices;
+                                      displayInvoices();
+                                    },
+                                    error: function(data){
+                                      console.log('Error'+data.id);
+                                    }
+                                  });
+                                }
                                 function displayInvoices()
                                 {
-                                    var_dump(invoice_ids);
+                                    console.log(invoice_ids);
                                 }
-                                function setValue (id) 
+                                function setValue (id)
                                 {
                                     var input = id,
                                         list = input.getAttribute('list'),
