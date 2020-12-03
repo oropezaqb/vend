@@ -123,16 +123,7 @@
                                 }
                                 function displayInvoices()
                                 {
-                                    for (index = 0; index < invoice_ids.length; ++index)
-                                    {
-                                        let invoice_id = invoice_ids[index]['invoice_id'];
-                                        let number = invoice_ids[index]['number'];
-                                        let date = invoice_ids[index]['date'];
-                                        let due_date = invoice_ids[index]['due_date'];
-                                        let amount = invoice_ids[index]['amount'];
-                                        let balance = invoice_ids[index]['balance'];
-                                        addItemLines(invoice_id, number, date, due_date, amount, balance);
-                                    }
+                                    console.log(invoice_ids);
                                 }
                                 function setValue (id)
                                 {
@@ -155,8 +146,8 @@
                                         }
                                     }
                                 }
-                                function addItemLines(invoice_id, number, date, due_date, amount, balance)
-                                {
+                                function addItemLines(a, b, c, d, e, f) {
+
                                     var tr = document.createElement("tr");
                                     var table = document.getElementById("item_lines");
                                     table.appendChild(tr);
@@ -166,73 +157,79 @@
 
                                     var invoiceNumber = document.createElement("input");
                                     invoiceNumber.setAttribute("type", "text");
-                                    invoiceNumber.setAttribute("id", "item_lines['invoice_id'][]" + line2);
-                                    invoiceNumber.setAttribute("name", "item_lines['invoice_id'][]" + line2);
-                                    invoiceNumber.setAttribute("class", "form-control");
-                                    invoiceNumber.setAttribute("value", "Invoice " + number + " (" + date + ")");
+                                    invoiceNumber.setAttribute("id", "item_lines['product_id'][]" + line2);
+                                    invoiceNumber.setAttribute("name", "item_lines['product_id'][]" + line2);
+                                    invoiceNumber.setAttribute("class", "custom-select");
+                                    invoiceNumber.setAttribute("value", f);
                                     invoiceNumber.setAttribute("readonly", "readonly");
                                     td1.appendChild(invoiceNumber);
 
-                                    var invoiceHidden = document.createElement("input");
-                                    invoiceHidden.setAttribute("type", "hidden");
-                                    invoiceHidden.setAttribute("name", "item_lines['invoice_id'][]");
-                                    invoiceHidden.setAttribute("id", "item_lines['invoice_id'][]" + line2 + "-hidden");
-                                    invoiceHidden.setAttribute("value", invoice_id);
-                                    td1.appendChild(invoiceHidden);
+                                    var productHidden = document.createElement("input");
+                                    productHidden.setAttribute("type", "hidden");
+                                    productHidden.setAttribute("name", "item_lines['product_id'][]");
+                                    productHidden.setAttribute("id", "item_lines['product_id'][]" + line2 + "-hidden");
+                                    productHidden.setAttribute("value", a);
+                                    td1.appendChild(productHidden);
+
+                                    var productHidden2 = document.createElement("input");
+                                    productHidden2.setAttribute("type", "hidden");
+                                    productHidden2.setAttribute("name", "item_lines['product_name'][]");
+                                    productHidden2.setAttribute("id", "name-item_lines['product_id'][]" + line2 + "-hidden");
+                                    productHidden2.setAttribute("value", f);
+                                    td1.appendChild(productHidden2);
 
                                     var td2 = document.createElement("td");
                                     tr.appendChild(td2);
 
-                                    var dueDate = document.createElement("input");
-                                    dueDate.setAttribute("type", "text");
-                                    dueDate.setAttribute("class", "form-control");
-                                    dueDate.setAttribute("id", "item_lines['due_date'][]" + line2);
-                                    dueDate.setAttribute("name", "item_lines['due_date'][]");
-                                    dueDate.setAttribute("style", "text-align: left;");
-                                    dueDate.setAttribute("value", due_date);
-                                    dueDate.setAttribute("readonly", "readonly");
-                                    td2.appendChild(dueDate);
+                                    var descriptionInput = document.createElement("input");
+                                    descriptionInput.setAttribute("type", "text");
+                                    descriptionInput.setAttribute("class", "form-control");
+                                    descriptionInput.setAttribute("id", "item_lines['description'][]" + line2);
+                                    descriptionInput.setAttribute("name", "item_lines['description'][]");
+                                    descriptionInput.setAttribute("style", "text-align: left;");
+                                    descriptionInput.setAttribute("value", b);
+                                    td2.appendChild(descriptionInput);
 
                                     var td3 = document.createElement("td");
                                     tr.appendChild(td3);
 
-                                    var amountOriginal = document.createElement("input");
-                                    amountOriginal.setAttribute("type", "number");
-                                    amountOriginal.setAttribute("class", "form-control");
-                                    amountOriginal.setAttribute("id", "item_lines['original_amount'][]" + line2);
-                                    amountOriginal.setAttribute("name", "item_lines['original_amount'][]");
-                                    amountOriginal.setAttribute("step", "0.01");
-                                    amountOriginal.setAttribute("style", "text-align: right;");
-                                    amountOriginal.setAttribute("value", amount);
-                                    amountOriginal.setAttribute("readonly", "readonly");
-                                    td3.appendChild(amountOriginal);
+                                    var quantityInput = document.createElement("input");
+                                    quantityInput.setAttribute("type", "number");
+                                    quantityInput.setAttribute("class", "form-control");
+                                    quantityInput.setAttribute("id", "item_lines['quantity'][]" + line2);
+                                    quantityInput.setAttribute("name", "item_lines['quantity'][]");
+                                    quantityInput.setAttribute("step", "0.001");
+                                    quantityInput.setAttribute("style", "text-align: right;");
+                                    quantityInput.setAttribute("value", c);
+                                    td3.appendChild(quantityInput);
 
                                     var td4 = document.createElement("td");
                                     tr.appendChild(td4);
 
-                                    var openBalance = document.createElement("input");
-                                    openBalance.setAttribute("type", "number");
-                                    openBalance.setAttribute("class", "form-control");
-                                    openBalance.setAttribute("id", "item_lines['open_balance'][]" + line2);
-                                    openBalance.setAttribute("name", "item_lines['open_balance'][]");
-                                    openBalance.setAttribute("step", "0.01");
-                                    openBalance.setAttribute("style", "text-align: right;");
-                                    openBalance.setAttribute("value", balance);
-                                    openBalance.setAttribute("readonly", "readonly");
-                                    td4.appendChild(openBalance);
+                                    var amountInput = document.createElement("input");
+                                    amountInput.setAttribute("type", "number");
+                                    amountInput.setAttribute("class", "form-control amount");
+                                    amountInput.setAttribute("id", "item_lines['amount'][]" + line2);
+                                    amountInput.setAttribute("name", "item_lines['amount'][]");
+                                    amountInput.setAttribute("step", "0.01");
+                                    amountInput.setAttribute("style", "text-align: right;");
+                                    amountInput.setAttribute("value", d);
+                                    amountInput.setAttribute("oninput", "updateSubtotal()");
+                                    td4.appendChild(amountInput);
 
                                     var td5 = document.createElement("td");
                                     tr.appendChild(td5);
 
-                                    var payment = document.createElement("input");
-                                    payment.setAttribute("type", "number");
-                                    payment.setAttribute("class", "form-control payment");
-                                    payment.setAttribute("id", "item_lines['payment'][]" + line2);
-                                    payment.setAttribute("name", "item_lines['payment'][]");
-                                    payment.setAttribute("step", "0.01");
-                                    payment.setAttribute("style", "text-align: right;");
-                                    payment.setAttribute("oninput", "updateSubTotal()");
-                                    td5.appendChild(payment);
+                                    var inputTaxInput = document.createElement("input");
+                                    inputTaxInput.setAttribute("type", "number");
+                                    inputTaxInput.setAttribute("class", "form-control tax");
+                                    inputTaxInput.setAttribute("id", "item_lines['output_tax'][]" + line2);
+                                    inputTaxInput.setAttribute("name", "item_lines['output_tax'][]");
+                                    inputTaxInput.setAttribute("step", "0.01");
+                                    inputTaxInput.setAttribute("style", "text-align: right;");
+                                    inputTaxInput.setAttribute("value", e);
+                                    inputTaxInput.setAttribute("oninput", "updateTotalTax()");
+                                    td5.appendChild(inputTaxInput);
 
                                     line2++;
                                 }
@@ -283,8 +280,8 @@
                                         }
                                     }
                                 }
-                                function updateSubTotal() {
-                                    var x = document.getElementsByClassName("payment");
+                                function updateSubtotal() {
+                                    var x = document.getElementsByClassName("amount");
                                     var sum = 0;
                                     var i;
                                     for (i = 0; i < x.length; i++) {
@@ -294,6 +291,7 @@
                                         sum += parseInt(x[i].value);
                                     }
                                     document.getElementById("subtotal").value = sum;
+                                    updateTotal();
                                 }
                                 function updateTotalTax() {
                                     var x = document.getElementsByClassName("tax");

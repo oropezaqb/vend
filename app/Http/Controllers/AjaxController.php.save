@@ -17,16 +17,12 @@ class AjaxController extends Controller
       {
           $amountReceivable = $invoice->itemLines->sum('amount') + $invoice->itemLines->sum('output_tax');
           $amountPaid = \DB::table('received_payment_lines')->where('invoice_id', $invoice->id)->sum('amount');
-          $balance = $amountReceivable - $amountPaid;
           if($amountReceivable > $amountPaid){
              $unpaidInvoicesIds[] = array(
                  'invoice_id' => $invoice->id,
-                 'number' => $invoice->invoice_number,
                  'date' => $invoice->date,
                  'due_date' => $invoice->due_date,
-                 'amount' => $amountReceivable,
-                 'balance' => $balance
-             );
+                 '')
           }
       }
       return response()->json(array('invoices'=> $unpaidInvoicesIds), 200);
