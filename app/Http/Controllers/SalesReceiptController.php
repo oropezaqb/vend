@@ -35,18 +35,14 @@ class SalesReceiptController extends Controller
     public function index()
     {
         $company = \Auth::user()->currentCompany->company;
-        if (empty(request('customer_name')))
-        {
+        if (empty(request('customer_name'))) {
             $salesReceipts = SalesReceipt::where('company_id', $company->id)->latest()->get();
-        }
-        else
-        {
+        } else {
             $customer = Customer::where('name', request('customer_name'))->firstOrFail();
             $salesReceipts = SalesReceipt::where('company_id', $company->id)
                 ->where('customer_id', $customer->id)->latest()->get();
         }
-        if (\Route::currentRouteName() === 'sales_receipts.index')
-        {
+        if (\Route::currentRouteName() === 'sales_receipts.index') {
             \Request::flash();
         }
         return view('sales_receipts.index', compact('salesReceipts'));
@@ -57,8 +53,10 @@ class SalesReceiptController extends Controller
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $accounts = Account::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('sales_receipts.show',
-            compact('salesReceipt', 'customers', 'accounts', 'products'));
+        return view(
+            'sales_receipts.show',
+            compact('salesReceipt', 'customers', 'accounts', 'products')
+        );
     }
     public function create()
     {
@@ -66,8 +64,10 @@ class SalesReceiptController extends Controller
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $accounts = Account::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('sales_receipts.create',
-            compact('customers', 'accounts', 'products'));
+        return view(
+            'sales_receipts.create',
+            compact('customers', 'accounts', 'products')
+        );
     }
     public function store(StoreSalesReceipt $request)
     {
@@ -85,7 +85,8 @@ class SalesReceiptController extends Controller
                 $createSalesReceipt = new CreateSalesReceipt();
                 $createSalesReceipt->updateLines($salesReceipt);
                 $createSalesReceipt->recordTransaction($salesReceipt);
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('type', 'sale')
                     ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
                 $createSalesReceipt->updateSales($salesForUpdate);
             });
@@ -97,18 +98,21 @@ class SalesReceiptController extends Controller
     public function translateError($e)
     {
         switch ($e->getCode()) {
-        case '23000':
-            if (preg_match("/for key '(.*)'/",
-              $e->getMessage(), $m)) {
-                $indexes = array(
-                  'my_unique_ref' =>
+            case '23000':
+                if (preg_match(
+                    "/for key '(.*)'/",
+                    $e->getMessage(),
+                    $m
+                )) {
+                    $indexes = array(
+                      'my_unique_ref' =>
                     array ('Sales receipt is already recorded.', 'number'));
-                if (isset($indexes[$m[1]])) {
-                    $this->err_flds = array($indexes[$m[1]][1] => 1);
-                    return $indexes[$m[1]][0];
+                    if (isset($indexes[$m[1]])) {
+                        $this->err_flds = array($indexes[$m[1]][1] => 1);
+                        return $indexes[$m[1]][0];
+                    }
                 }
-            }
-        break;
+                break;
         }
         return $e->getMessage();
     }
@@ -119,8 +123,10 @@ class SalesReceiptController extends Controller
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $accounts = Account::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('sales_receipts.edit',
-            compact('salesReceipt', 'customers', 'accounts', 'products'));
+        return view(
+            'sales_receipts.edit',
+            compact('salesReceipt', 'customers', 'accounts', 'products')
+        );
     }
     public function update(StoreSalesReceipt $request, SalesReceipt $salesReceipt)
     {
@@ -138,11 +144,11 @@ class SalesReceiptController extends Controller
                 ]);
                 $salesReceipt->save();
                 $changeDate = $newDate;
-                if ($oldDate < $newDate)
-                {
+                if ($oldDate < $newDate) {
                     $changeDate = $oldDate;
                 }
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('type', 'sale')->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
                 $salesReceipt->journalEntry()->delete();
                 $createSalesReceipt = new CreateSalesReceipt();
                 $createSalesReceipt->deleteSalesReceiptDetails($salesReceipt);

@@ -31,18 +31,14 @@ class ReceivedPaymentController extends Controller
     public function index()
     {
         $company = \Auth::user()->currentCompany->company;
-        if (empty(request('customer_name')))
-        {
+        if (empty(request('customer_name'))) {
             $receivedPayments = ReceivedPayment::where('company_id', $company->id)->latest()->get();
-        }
-        else
-        {
+        } else {
             $customer = Customer::where('name', request('customer_name'))->firstOrFail();
             $receivedPayments = ReceivedPayment::where('company_id', $company->id)
                 ->where('customer_id', $customer->id)->latest()->get();
         }
-        if (\Route::currentRouteName() === 'received_payments.index')
-        {
+        if (\Route::currentRouteName() === 'received_payments.index') {
             \Request::flash();
         }
         return view('received_payments.index', compact('receivedPayments'));
@@ -52,8 +48,10 @@ class ReceivedPaymentController extends Controller
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $accounts = Account::where('company_id', $company->id)->latest()->get();
-        return view('received_payments.create',
-            compact('customers', 'accounts'));
+        return view(
+            'received_payments.create',
+            compact('customers', 'accounts')
+        );
     }
     public function store(StoreReceivedPayment $request)
     {

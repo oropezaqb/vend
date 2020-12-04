@@ -14,24 +14,24 @@ use App\SubsidiaryLedger;
 use App\Transaction;
 use App\SalesReceiptItemLine;
 
+    /**
+     * @SuppressWarnings(PHPMD.ElseExpression)
+     */
+
 class CreateSalesReceipt
 {
     public function recordSales($salesReceipt, $input)
     {
         $count = count($input['item_lines']["'product_id'"], 1);
-        if ($count > 0)
-        {
-            for ($row = 0; $row < $count; $row++)
-            {
+        if ($count > 0) {
+            for ($row = 0; $row < $count; $row++) {
                 $product = Product::find($input['item_lines']["'product_id'"][$row]);
                 if ($product->track_quantity) {
                     $numberRecorded = 0;
-                    do
-                    {
+                    do {
                         $company = \Auth::user()->currentCompany->company;
                         $purchase = $this->determinePurchaseSold($company, $product);
-                        if (is_object($purchase))
-                        {
+                        if (is_object($purchase)) {
                             $numberUnrecorded = $input['item_lines']["'quantity'"][$row] - $numberRecorded;
                             $quantity = $this->determineQuantitySold($company, $purchase, $numberUnrecorded);
                             $amount = $this->determineAmountSold($company, $purchase, $numberUnrecorded);
@@ -45,9 +45,7 @@ class CreateSalesReceipt
                             ]);
                             $salesReceipt->sales()->save($sale);
                             $numberRecorded += $quantity;
-                        }
-                        else
-                        {
+                        } else {
                             break;
                         }
                     } while ($numberRecorded < $input['item_lines']["'quantity'"][$row]);
@@ -59,8 +57,7 @@ class CreateSalesReceipt
     {
         $allPurchases = Purchase::where('company_id', $company->id)->where('product_id', $product->id)->get();
         $purchases = $allPurchases->sortBy('date');
-        foreach ($purchases as $purchase)
-        {
+        foreach ($purchases as $purchase) {
             $numberSold = Sale::where('company_id', $company->id)->where('purchase_id', $purchase->id)->sum('quantity');
             if ($numberSold < $purchase->quantity) {
                 return $purchase;
@@ -71,12 +68,9 @@ class CreateSalesReceipt
     {
         $numberSold = Sale::where('company_id', $company->id)->where('purchase_id', $purchase->id)->sum('quantity');
         $numberUnsold = $purchase->quantity - $numberSold;
-        if ($numberUnrecorded < $numberUnsold)
-        {
+        if ($numberUnrecorded < $numberUnsold) {
             return $numberUnrecorded;
-        }
-        else
-        {
+        } else {
             return $numberUnsold;
         }
     }
@@ -86,13 +80,10 @@ class CreateSalesReceipt
         $numberUnsold = $purchase->quantity - $numberSold;
         $amountSold = Sale::where('company_id', $company->id)->where('purchase_id', $purchase->id)->sum('amount');
         $amountUnsold = $purchase->amount - $amountSold;
-        if ($numberUnrecorded < $numberUnsold)
-        {
+        if ($numberUnrecorded < $numberUnsold) {
             $costOfSales = round($amountUnsold / $numberUnsold * $numberUnrecorded, 2);
             return $costOfSales;
-        }
-        else
-        {
+        } else {
             return $amountUnsold;
         }
     }
@@ -102,7 +93,6 @@ class CreateSalesReceipt
         $document = Document::firstOrCreate(['name' => 'Sales Receipt', 'company_id' => $company->id]);
         $receivableAccount = Account::all()->find($input['account_id']);
         $taxAccount = Account::where('title', 'Output VAT')->firstOrFail();
-        $customer = Customer::all()->find($input['customer_id']);
         $journalEntry = new JournalEntry([
             'company_id' => $company->id,
             'date' => $input['date'],
@@ -114,10 +104,8 @@ class CreateSalesReceipt
         $receivableAmount = 0;
         $taxAmount = 0;
         $count = count($input['item_lines']["'product_id'"]);
-        if ($count > 0)
-        {
-            for ($row = 0; $row < $count; $row++)
-            {
+        if ($count > 0) {
+            for ($row = 0; $row < $count; $row++) {
                 $inputTax = 0;
                 if (!is_null($input['item_lines']["'output_tax'"][$row])) {
                     $inputTax = $input['item_lines']["'output_tax'"][$row];
@@ -186,30 +174,24 @@ class CreateSalesReceipt
     }
     public function updateSales($salesForUpdate)
     {
-        foreach($salesForUpdate as $saleForUpdate)
-        {
+        foreach ($salesForUpdate as $saleForUpdate) {
             $transactions = Transaction::all();
             $transaction = $transactions->find($saleForUpdate->id);
             $salesReceipt = $transaction->transactable;
-            if (is_object($salesReceipt->journalEntry))
-            {
-                foreach($salesReceipt->journalEntry->postings as $posting)
-                {
+            if (is_object($salesReceipt->journalEntry)) {
+                foreach ($salesReceipt->journalEntry->postings as $posting) {
                     $posting->delete();
                 }
                 $salesReceipt->journalEntry->delete();
             }
-            if (is_object($salesReceipt->sales))
-            {
+            if (is_object($salesReceipt->sales)) {
                 $sales = $salesReceipt->sales;
-                foreach($sales as $sale)
-                {
+                foreach ($sales as $sale) {
                     $sale->delete();
                 }
             }
         }
-        foreach($salesForUpdate as $saleForUpdate)
-        {
+        foreach ($salesForUpdate as $saleForUpdate) {
             $transactions = Transaction::all();
             $transaction = $transactions->find($saleForUpdate->id);
             $salesReceipt = $transaction->transactable;
@@ -219,8 +201,7 @@ class CreateSalesReceipt
             $input['date'] = $salesReceipt->date;
             $input['number'] = $salesReceipt->number;
             $input['account_id'] = $salesReceipt->account_id;
-            foreach($salesReceipt->itemLines as $itemLine)
-            {
+            foreach ($salesReceipt->itemLines as $itemLine) {
                 $input['item_lines']["'product_id'"][$row] = $itemLine->product_id;
                 $input['item_lines']["'description'"][$row] = $itemLine->description;
                 $input['item_lines']["'quantity'"][$row] = $itemLine->quantity;
@@ -237,8 +218,7 @@ class CreateSalesReceipt
     {
         if (!is_null(request("item_lines.'product_id'"))) {
             $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++)
-            {
+            for ($row = 0; $row < $count; $row++) {
                 $outputTax = 0;
                 if (!is_null(request("item_lines.'output_tax'.".$row))) {
                     $outputTax = request("item_lines.'output_tax'.".$row);

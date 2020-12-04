@@ -59,8 +59,7 @@ class StoreSalesReceipt extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            if (!is_int(filter_var(request('number'), FILTER_VALIDATE_INT)))
-            {
+            if (!is_int(filter_var(request('number'), FILTER_VALIDATE_INT))) {
                 $validator->errors()->add('number', 'Sales receipt number must be an integer.');
             }
             if (is_null(request("item_lines.'product_id'"))) {

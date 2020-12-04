@@ -5,6 +5,10 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Invoice;
 
+    /**
+     * @SuppressWarnings(PHPMD.ElseExpression)
+     */
+
 class StoreReceivedPayment extends FormRequest
 {
     /**
@@ -72,15 +76,15 @@ class StoreReceivedPayment extends FormRequest
                     if (!is_numeric(request("item_lines.'payment'.".$row))) {
                         $validator->errors()->add('item_lines', 'Line ' . ($row + 1) .
                             ': Payment should be a number.');
-                    }
-                    else {
+                    } else {
                         if (request("item_lines.'payment'.".$row) <= 0) {
                             $validator->errors()->add('item_lines', 'Line ' . ($row + 1) .
                                 ': Payment should be positive.');
-                        }
-                        else{
-                            $amountReceivable = $invoice->itemLines->sum('amount') + $invoice->itemLines->sum('output_tax');
-                            $amountPaid = \DB::table('received_payment_lines')->where('invoice_id', $invoice->id)->sum('amount');
+                        } else {
+                            $amountReceivable = $invoice->itemLines->sum('amount') +
+                                $invoice->itemLines->sum('output_tax');
+                            $amountPaid = \DB::table('received_payment_lines')
+                                ->where('invoice_id', $invoice->id)->sum('amount');
                             $balance = $amountReceivable - $amountPaid;
                             if (request("item_lines.'payment'.".$row) > $balance) {
                                 $validator->errors()->add('item_lines', 'Line ' . ($row + 1) .
@@ -92,8 +96,10 @@ class StoreReceivedPayment extends FormRequest
                 }
             }
             if (!$thereIsPayment) {
-                $validator->errors()->add('item_lines',
-                    'There should be at least one payment.');
+                $validator->errors()->add(
+                    'item_lines',
+                    'There should be at least one payment.'
+                );
             }
         });
     }
