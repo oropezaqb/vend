@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReceivedPayment extends Model
 {
+    protected $guarded = [];
     public function path()
     {
         return route('received_payments.show', $this);

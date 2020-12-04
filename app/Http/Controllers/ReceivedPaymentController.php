@@ -55,4 +55,31 @@ class ReceivedPaymentController extends Controller
         return view('received_payments.create',
             compact('customers', 'accounts'));
     }
+    public function store(StoreReceivedPayment $request)
+    {
+        $company = \Auth::user()->currentCompany->company;
+        $receivedPayment = new ReceivedPayment([
+            'company_id' => $company->id,
+            'date' => request('date'),
+            'customer_id' => request('customer_id'),
+            'number' => request('number'),
+            'account_id' => request('account_id')
+        ]);
+        $receivedPayment->save();
+        if (!is_null(request("item_lines.'invoice_id'"))) {
+            $count = count(request("item_lines.'invoice_id'"));
+            for ($row = 0; $row < $count; $row++) {
+                if (is_numeric(request("item_lines.'payment'.".$row)) && request("item_lines.'payment'.".$row) > 0) {
+                    $receivedPaymentLine = new ReceivedPaymentLine([
+                        'company_id' => $company->id,
+                        'received_payment_id' => $receivedPayment->id,
+                        'invoice_id' => request("item_lines.'invoice_id'.".$row),
+                        'amount' => request("item_lines.'payment'.".$row)
+                    ]);
+                    $receivedPaymentLine->save();
+                }
+            }
+        }
+        return redirect(route('received_payments.index'));
+    }
 }

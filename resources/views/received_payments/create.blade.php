@@ -35,7 +35,7 @@
                                 </datalist>
                                 <div class="form-group custom-control-inline">
                                     <label for="customer_id">Customer</label>&nbsp;
-                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this); getInvoices();" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}">
+                                    <input list="customer_ids" id="customer_id0" oninput="setValue(this); getInvoices();" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}">
                                     <datalist id="customer_ids">
                                         @foreach ($customers as $customer)
                                             <option data-value="{{ $customer->id }}">{{ $customer->name }}</option>
@@ -71,7 +71,7 @@
                                     <table id="item_lines" style="width:100%">
                                         <tr style="text-align: center;">
                                             <th>
-                                                <label for="lines['invoice_id'][]">Description</label>
+                                                <label>Description</label>
                                             </th>
                                             <th>
                                                 <label for="lines['due_date'][]">Due Date</label>
@@ -115,11 +115,25 @@
                                     dataType: 'json',
                                     success:function(data) {
                                       invoice_ids = data.invoices;
-                                      displayInvoices();
+                                      if (invoice_ids === null) {
+                                          $(".invoice-lines").remove();
+                                          deleteInvoices();
+                                      }
+                                      else {
+                                          displayInvoices();
+                                      }
                                     },
                                     error: function(data){
                                     }
                                   });
+                                }
+                                function deleteInvoices()
+                                {
+                                    var x = document.getElementsByClassName("invoice-lines");
+                                    var i;
+                                    for (i = 0; i < x.length; i++) {
+                                        x[i].remove();
+                                    }
                                 }
                                 function displayInvoices()
                                 {
@@ -155,9 +169,10 @@
                                         }
                                     }
                                 }
-                                function addItemLines(invoice_id, number, date, due_date, amount, balance)
+                                function addItemLines(invoice_id, number, date, due_date, amount, balance, payment)
                                 {
                                     var tr = document.createElement("tr");
+                                    tr.setAttribute("class", "invoice-lines");
                                     var table = document.getElementById("item_lines");
                                     table.appendChild(tr);
 
@@ -167,7 +182,6 @@
                                     var invoiceNumber = document.createElement("input");
                                     invoiceNumber.setAttribute("type", "text");
                                     invoiceNumber.setAttribute("id", "item_lines['invoice_id'][]" + line2);
-                                    invoiceNumber.setAttribute("name", "item_lines['invoice_id'][]" + line2);
                                     invoiceNumber.setAttribute("class", "form-control");
                                     invoiceNumber.setAttribute("value", "Invoice " + number + " (" + date + ")");
                                     invoiceNumber.setAttribute("readonly", "readonly");
@@ -179,6 +193,20 @@
                                     invoiceHidden.setAttribute("id", "item_lines['invoice_id'][]" + line2 + "-hidden");
                                     invoiceHidden.setAttribute("value", invoice_id);
                                     td1.appendChild(invoiceHidden);
+
+                                    var numberHidden = document.createElement("input");
+                                    numberHidden.setAttribute("type", "hidden");
+                                    numberHidden.setAttribute("name", "item_lines['number'][]");
+                                    numberHidden.setAttribute("id", "item_lines['number'][]" + line2 + "-hidden");
+                                    numberHidden.setAttribute("value", number);
+                                    td1.appendChild(numberHidden);
+
+                                    var dateHidden = document.createElement("input");
+                                    dateHidden.setAttribute("type", "hidden");
+                                    dateHidden.setAttribute("name", "item_lines['date'][]");
+                                    dateHidden.setAttribute("id", "item_lines['date'][]" + line2 + "-hidden");
+                                    dateHidden.setAttribute("value", date);
+                                    td1.appendChild(dateHidden);
 
                                     var td2 = document.createElement("td");
                                     tr.appendChild(td2);
@@ -199,8 +227,8 @@
                                     var amountOriginal = document.createElement("input");
                                     amountOriginal.setAttribute("type", "number");
                                     amountOriginal.setAttribute("class", "form-control");
-                                    amountOriginal.setAttribute("id", "item_lines['original_amount'][]" + line2);
-                                    amountOriginal.setAttribute("name", "item_lines['original_amount'][]");
+                                    amountOriginal.setAttribute("id", "item_lines['amount'][]" + line2);
+                                    amountOriginal.setAttribute("name", "item_lines['amount'][]");
                                     amountOriginal.setAttribute("step", "0.01");
                                     amountOriginal.setAttribute("style", "text-align: right;");
                                     amountOriginal.setAttribute("value", amount);
@@ -213,8 +241,8 @@
                                     var openBalance = document.createElement("input");
                                     openBalance.setAttribute("type", "number");
                                     openBalance.setAttribute("class", "form-control");
-                                    openBalance.setAttribute("id", "item_lines['open_balance'][]" + line2);
-                                    openBalance.setAttribute("name", "item_lines['open_balance'][]");
+                                    openBalance.setAttribute("id", "item_lines['balance'][]" + line2);
+                                    openBalance.setAttribute("name", "item_lines['balance'][]");
                                     openBalance.setAttribute("step", "0.01");
                                     openBalance.setAttribute("style", "text-align: right;");
                                     openBalance.setAttribute("value", balance);
@@ -224,15 +252,16 @@
                                     var td5 = document.createElement("td");
                                     tr.appendChild(td5);
 
-                                    var payment = document.createElement("input");
-                                    payment.setAttribute("type", "number");
-                                    payment.setAttribute("class", "form-control payment");
-                                    payment.setAttribute("id", "item_lines['payment'][]" + line2);
-                                    payment.setAttribute("name", "item_lines['payment'][]");
-                                    payment.setAttribute("step", "0.01");
-                                    payment.setAttribute("style", "text-align: right;");
-                                    payment.setAttribute("oninput", "updateSubTotal()");
-                                    td5.appendChild(payment);
+                                    var paymentAmount = document.createElement("input");
+                                    paymentAmount.setAttribute("type", "number");
+                                    paymentAmount.setAttribute("class", "form-control payment");
+                                    paymentAmount.setAttribute("id", "item_lines['payment'][]" + line2);
+                                    paymentAmount.setAttribute("name", "item_lines['payment'][]");
+                                    paymentAmount.setAttribute("step", "0.01");
+                                    paymentAmount.setAttribute("style", "text-align: right;");
+                                    paymentAmount.setAttribute("value", payment);
+                                    paymentAmount.setAttribute("oninput", "updateSubTotal()");
+                                    td5.appendChild(paymentAmount);
 
                                     line2++;
                                 }
@@ -324,12 +353,14 @@
                                     }
                                 }
                                 @if (!empty(old('item_lines')))
-                                    var a = <?php echo json_encode(old("item_lines.'product_id'")); ?>;
-                                    var b = <?php echo json_encode(old("item_lines.'description'")); ?>;
-                                    var c = <?php echo json_encode(old("item_lines.'quantity'")); ?>;
-                                    var d = <?php echo json_encode(old("item_lines.'amount'")); ?>;
-                                    var e = <?php echo json_encode(old("item_lines.'output_tax'")); ?>;
-                                    var f = <?php echo json_encode(old("item_lines.'product_name'")); ?>;
+console.log(<?php echo json_encode(old("item_lines")); ?>);
+                                    var a = <?php echo json_encode(old("item_lines.'invoice_id'")); ?>;
+                                    var b = <?php echo json_encode(old("item_lines.'number'")); ?>;
+                                    var c = <?php echo json_encode(old("item_lines.'date'")); ?>;
+                                    var d = <?php echo json_encode(old("item_lines.'due_date'")); ?>;
+                                    var e = <?php echo json_encode(old("item_lines.'amount'")); ?>;
+                                    var f = <?php echo json_encode(old("item_lines.'balance'")); ?>;
+                                    var g = <?php echo json_encode(old("item_lines.'payment'")); ?>;
                                     var i;
                                     for (i = 0; i < a.length; i++)
                                     {
@@ -339,11 +370,10 @@
                                         if(d[i] == null) {d[i] = "";}
                                         if(e[i] == null) {e[i] = "";}
                                         if(f[i] == null) {f[i] = "";}
-                                        addItemLines(a[i], b[i], c[i], d[i], e[i], f[i]);
+                                        if(g[i] == null) {g[i] = "";}
+                                        addItemLines(a[i], b[i], c[i], d[i], e[i], f[i], g[i]);
                                     }
-                                    updateSubtotal();
-                                    updateTotalTax();
-                                    updateTotal();
+                                    updateSubTotal();
                                 @endif
                             </script>
                         </div>

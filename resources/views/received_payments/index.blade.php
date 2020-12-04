@@ -40,7 +40,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-link" type="submit">Delete</button>
-                                    </form></div><div style="display:inline-block;">&nbsp;&nbsp;{{ $salesReceipt->date }}, {{ $receivedPayment->customer->name }}, Received Payment no. {{ $receivedPayment->number }}</div>
+                                    </form></div><div style="display:inline-block;">&nbsp;&nbsp;{{ $receivedPayment->date }}, {{ $receivedPayment->customer->name }}, Received Payment no. {{ $receivedPayment->number }}</div>
                                 </div>
                             </div>
                         @empty

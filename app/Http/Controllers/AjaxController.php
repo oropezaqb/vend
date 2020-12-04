@@ -11,6 +11,9 @@ class AjaxController extends Controller
    public function store(Request $request) {
       $id = $request->input('customer_id');
       $customer = Customer::find($id);
+      if (is_null($customer)) {
+          return response()->json(array('invoices'=> null), 200);
+      }
       $invoices = Invoice::where('customer_id', $customer->id)->get();
       $unpaidInvoicesIds = array();
       foreach ($invoices as $invoice)
