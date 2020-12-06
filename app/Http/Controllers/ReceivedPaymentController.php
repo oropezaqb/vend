@@ -78,8 +78,8 @@ class ReceivedPaymentController extends Controller
                 }
             }
         }
-        $createReceivedPayment = new CreateReceivedPayment();
-        $createReceivedPayment->recordJournalEntry($receivedPayment);
+        $createRecvPayment = new CreateReceivedPayment();
+        $createRecvPayment->recordJournalEntry($receivedPayment);
         return redirect(route('received_payments.index'));
     }
     public function show(ReceivedPayment $receivedPayment)
@@ -100,17 +100,16 @@ class ReceivedPaymentController extends Controller
         $accounts = Account::where('company_id', $company->id)->latest()->get();
         $customer = Customer::find($receivedPayment->customer_id);
         $invoices = Invoice::where('customer_id', $customer->id)->get();
-        $receivedPaymentInvoices = array();
-        foreach($receivedPayment->lines as $line){
-            $receivedPaymentInvoices[] = $line->invoice_id;
+        $recvPaymentInv = array();
+        foreach ($receivedPayment->lines as $line) {
+            $recvPaymentInv[] = $line->invoice_id;
         }
         $unpaidInvoicesIds = array();
-        foreach ($invoices as $invoice)
-        {
+        foreach ($invoices as $invoice) {
             $amountReceivable = $invoice->itemLines->sum('amount') + $invoice->itemLines->sum('output_tax');
             $amountPaid = \DB::table('received_payment_lines')->where('invoice_id', $invoice->id)->sum('amount');
             $balance = $amountReceivable - $amountPaid;
-            if($amountReceivable > $amountPaid && !in_array($invoice->id, $receivedPaymentInvoices)){
+            if ($amountReceivable > $amountPaid && !in_array($invoice->id, $recvPaymentInv)) {
                 $unpaidInvoicesIds[] = array(
                     'invoice_id' => $invoice->id,
                     'number' => $invoice->invoice_number,
@@ -155,9 +154,9 @@ class ReceivedPaymentController extends Controller
             }
         }
         $receivedPayment->journalEntry()->delete();
-        $createReceivedPayment = new CreateReceivedPayment();
-        $createReceivedPayment->deleteReceivedPayment($receivedPayment);
-        $createReceivedPayment->recordJournalEntry($receivedPayment);
+        $createRecvPayment = new CreateReceivedPayment();
+        $createRecvPayment->deleteReceivedPayment($receivedPayment);
+        $createRecvPayment->recordJournalEntry($receivedPayment);
         return redirect(route('received_payments.index'));
     }
     public function destroy(ReceivedPayment $receivedPayment)

@@ -20,8 +20,11 @@ class CreateReceivedPayment
         $document = Document::firstOrCreate(['name' => 'Received Payment', 'company_id' => $company->id]);
         $receivableAccount = Account::firstOrCreate(['title' => 'Accounts Receivable', 'company_id' => $company->id]);
         $customer = Customer::all()->find(request('customer_id'));
-        $receivableSubsidiary = SubsidiaryLedger::firstOrCreate(['name' => $customer->name, 'company_id' => $company->id]);
-        $reportLineItem = ReportLineItem::firstOrCreate(['report' => 'Statement of Cash Flows', 'section' => 'Cash flow from operations', 'line_item' => 'Cash received from customers', 'company_id' => $company->id]);
+        $receivableSubsidiary = SubsidiaryLedger::firstOrCreate(['name' => $customer->name,
+            'company_id' => $company->id]);
+        $reportLineItem = ReportLineItem::firstOrCreate(['report' => 'Statement of Cash Flows',
+            'section' => 'Cash flow from operations',
+            'line_item' => 'Cash received from customers', 'company_id' => $company->id]);
         $journalEntry = new JournalEntry([
             'company_id' => $company->id,
             'date' => request('date'),
@@ -34,8 +37,7 @@ class CreateReceivedPayment
         $lines = $receivedPayment->lines;
         if (!is_null($lines)) {
             $count = count($lines);
-            for ($row = 0; $row < $count; $row++)
-            {
+            for ($row = 0; $row < $count; $row++) {
                 $paymentAmount = $lines[$row]['amount'];
             }
         }
