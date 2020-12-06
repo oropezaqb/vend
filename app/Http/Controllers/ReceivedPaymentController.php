@@ -78,6 +78,91 @@ class ReceivedPaymentController extends Controller
                 }
             }
         }
+        $createReceivedPayment = new CreateReceivedPayment();
+        $createReceivedPayment->recordJournalEntry($receivedPayment);
+        return redirect(route('received_payments.index'));
+    }
+    public function show(ReceivedPayment $receivedPayment)
+    {
+        $company = \Auth::user()->currentCompany->company;
+        $customers = Customer::where('company_id', $company->id)->latest()->get();
+        $accounts = Account::where('company_id', $company->id)->latest()->get();
+        $unpaidInvoicesIds = array();
+        return view(
+            'received_payments.show',
+            compact('receivedPayment', 'customers', 'accounts', 'unpaidInvoicesIds')
+        );
+    }
+    public function edit(ReceivedPayment $receivedPayment)
+    {
+        $company = \Auth::user()->currentCompany->company;
+        $customers = Customer::where('company_id', $company->id)->latest()->get();
+        $accounts = Account::where('company_id', $company->id)->latest()->get();
+        $customer = Customer::find($receivedPayment->customer_id);
+        $invoices = Invoice::where('customer_id', $customer->id)->get();
+        $receivedPaymentInvoices = array();
+        foreach($receivedPayment->lines as $line){
+            $receivedPaymentInvoices[] = $line->invoice_id;
+        }
+        $unpaidInvoicesIds = array();
+        foreach ($invoices as $invoice)
+        {
+            $amountReceivable = $invoice->itemLines->sum('amount') + $invoice->itemLines->sum('output_tax');
+            $amountPaid = \DB::table('received_payment_lines')->where('invoice_id', $invoice->id)->sum('amount');
+            $balance = $amountReceivable - $amountPaid;
+            if($amountReceivable > $amountPaid && !in_array($invoice->id, $receivedPaymentInvoices)){
+                $unpaidInvoicesIds[] = array(
+                    'invoice_id' => $invoice->id,
+                    'number' => $invoice->invoice_number,
+                    'date' => $invoice->date,
+                    'due_date' => $invoice->due_date,
+                    'amount' => $amountReceivable,
+                    'balance' => $balance
+                );
+            }
+        }
+        return view(
+            'received_payments.edit',
+            compact('receivedPayment', 'customers', 'accounts', 'unpaidInvoicesIds')
+        );
+    }
+    public function update(StoreReceivedPayment $request, ReceivedPayment $receivedPayment)
+    {
+        $company = \Auth::user()->currentCompany->company;
+        $receivedPayment->update([
+            'company_id' => $company->id,
+            'date' => request('date'),
+            'customer_id' => request('customer_id'),
+            'number' => request('number'),
+            'account_id' => request('account_id')
+        ]);
+        $receivedPayment->save();
+        foreach ($receivedPayment->lines as $line) {
+            $line->delete();
+        }
+        if (!is_null(request("item_lines.'invoice_id'"))) {
+            $count = count(request("item_lines.'invoice_id'"));
+            for ($row = 0; $row < $count; $row++) {
+                if (is_numeric(request("item_lines.'payment'.".$row)) && request("item_lines.'payment'.".$row) > 0) {
+                    $receivedPaymentLine = new ReceivedPaymentLine([
+                        'company_id' => $company->id,
+                        'received_payment_id' => $receivedPayment->id,
+                        'invoice_id' => request("item_lines.'invoice_id'.".$row),
+                        'amount' => request("item_lines.'payment'.".$row)
+                    ]);
+                    $receivedPaymentLine->save();
+                }
+            }
+        }
+        $receivedPayment->journalEntry()->delete();
+        $createReceivedPayment = new CreateReceivedPayment();
+        $createReceivedPayment->deleteReceivedPayment($receivedPayment);
+        $createReceivedPayment->recordJournalEntry($receivedPayment);
+        return redirect(route('received_payments.index'));
+    }
+    public function destroy(ReceivedPayment $receivedPayment)
+    {
+        $receivedPayment->delete();
         return redirect(route('received_payments.index'));
     }
 }

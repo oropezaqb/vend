@@ -19,6 +19,10 @@ class ReceivedPayment extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
+    public function account()
+    {
+        return $this->belongsTo(Account::class, 'account_id');
+    }
     public function journalEntry()
     {
         return $this->morphOne('App\JournalEntry', 'journalizable');
