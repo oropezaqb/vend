@@ -77,19 +77,19 @@ class ReportController extends Controller
     {
         return view('reports.trial_balance');
     }
-    public function run(Request $request)
-    {
+    public function run (Request $request) {
         $query = new Query();
         $query->title = "Trial Balance";
         $date = DateTime::createFromFormat('Y-m-d', "$request->date");
-        $query->date = 'As of ' . date_format($date, 'M d, Y');
+        $query->date = 'As of ' . date_format($date,'M d, Y');
         $db = new DbAccess();
-        $stmt = $db->query("SELECT accounts.title, accounts.type AS theType, SUM(debit) debit
+        $stmt = $db->query("SELECT accounts.id, accounts.title, accounts.type AS theType, SUM(debit) debit
             FROM journal_entries
             RIGHT JOIN postings ON journal_entries.id = postings.journal_entry_id
             RIGHT JOIN accounts ON postings.account_id = accounts.id
             WHERE accounts.company_id=" . auth()->user()->currentCompany->company->id . "
-            AND journal_entries.date<=". "'" . request('date'). "'" ." GROUP BY accounts.title
+            AND journal_entries.date<=". "'" . request('date'). "'" ."
+            GROUP BY accounts.id
             ORDER BY theType ASC;");
         $headings = array('Account Title', 'Debit', 'Credit');
         return view('reports.trial_balance.screen', compact('query', 'stmt', 'headings'));

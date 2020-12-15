@@ -48,6 +48,7 @@ Route::resources([
     'received_payments' => 'ReceivedPaymentController',
     'sales_receipts' => 'SalesReceiptController',
     'received_payments' => 'ReceivedPaymentController',
+    'creditnote' => 'CreditNoteController',
 ]);
 
 Route::resource('queries', 'QueryController');

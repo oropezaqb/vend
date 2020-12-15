@@ -56,12 +56,9 @@
             <h6 class="collapse-header">Customers</h6>
             <a class="collapse-item" href="invoices">Invoice</a>
             <a class="collapse-item" href="received_payments">Receive payment</a>
-            <a class="collapse-item" href="#">Estimate</a>
-            <a class="collapse-item" href="#">Credit note</a>
-            <a class="collapse-item" href="#">Sales receipt</a>
-            <a class="collapse-item" href="#">Refund receipt</a>
-            <a class="collapse-item" href="#">Delayed credit</a>
-            <a class="collapse-item" href="#">Delayed charge</a>
+            <a class="collapse-item" href="creditnote">Credit note</a>
+            <a class="collapse-item" href="sales_receipts">Sales receipt</a>
+            <a class="collapse-item" href="refundreceipt">Refund receipt</a>
             <h6 class="collapse-header">Suppliers</h6>
             <a class="collapse-item" href="#">Expense</a>
             <a class="collapse-item" href="#">Cheque</a>
