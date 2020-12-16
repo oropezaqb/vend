@@ -16,7 +16,7 @@ class CreateCreditNotesTable extends Migration
         Schema::create('credit_notes', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id');
-            $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('invoice_id');
             $table->date('date');
             $table->unsignedBigInteger('number');
             $table->timestamps();
@@ -25,15 +25,14 @@ class CreateCreditNotesTable extends Migration
                 ->references('id')
                 ->on('companies')
                 ->onDelete('cascade');
-            $table->foreign('customer_id')
+            $table->foreign('invoice_id')
                 ->references('id')
-                ->on('customers');
+                ->on('invoices');
         });
         Schema::create('credit_note_lines', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('credit_note_id');
-            $table->unsignedBigInteger('product_id');
-            $table->text('description')->nullable();
+            $table->unsignedBigInteger('invoice_line_id');
             $table->float('quantity', 8, 2)->nullable();
             $table->decimal('amount', 13, 2);
             $table->decimal('output_tax', 13, 2)->default(0);
@@ -42,9 +41,9 @@ class CreateCreditNotesTable extends Migration
                 ->references('id')
                 ->on('credit_notes')
                 ->onDelete('cascade');
-            $table->foreign('product_id')
+            $table->foreign('invoice_line_id')
                 ->references('id')
-                ->on('products');
+                ->on('invoice_item_lines');
         });
     }
 

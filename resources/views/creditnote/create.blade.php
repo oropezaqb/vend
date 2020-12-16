@@ -34,8 +34,12 @@
                                     @endforeach
                                 </datalist>
                                 <div class="form-group custom-control-inline">
+                                    <label for="number">Find&nbsp;by&nbsp;invoice&nbsp;no.&nbsp;</label>&nbsp;
+                                    <input type="number" class="form-control" id="invoice_id" name="invoice_id" style="text-align: right;" required value="{!! old('invoice_id') !!}" oninput="getInvoice()">
+                                </div>
+                                <div class="form-group custom-control-inline">
                                     <label for="customer_id">Customer</label>&nbsp;
-                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this)" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}">
+                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this)" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}" readonly>
                                     <datalist id="customer_ids">
                                         @foreach ($customers as $customer)
                                             <option data-value="{{ $customer->id }}">{{ $customer->name }}</option>
@@ -79,27 +83,113 @@
                                         <tr>
                                     </table>
                                 </div>
-                                <a class="btn btn-outline-secondary btn-sm" id="addItemLines" onclick="addItemLines('', '', '', '', '', '', '', '')">Add Lines</a>&nbsp;&nbsp;
-                                <a class="btn btn-outline-secondary btn-sm" id="deleteItemLines" onclick="deleteItemLines()">Delete Lines</a>
                                 <br><br>
                                 <div class="form-group custom-control-inline" style="float: right; clear: both;">
                                     <label for="subtotal">Subtotal</label>&nbsp;
-                                    <input id="subtotal" type="text" width="15" readonly style="text-align: right;" class="form-control">
+                                    <input id="subtotal" type="text" width="15" readonly style="background-color: transparent; text-align: right;" class="form-control">
                                 </div>
                                 <div class="form-group custom-control-inline" style="float: right; clear: both;">
                                     <label for="total_tax">Total&nbsp;tax</label>&nbsp;
-                                    <input id="total_tax" type="text" width="15" readonly style="text-align: right;" class="form-control">
+                                    <input id="total_tax" type="text" width="15" readonly style="background-color: transparent; text-align: right;" class="form-control">
                                 </div>
                                 <div class="form-group custom-control-inline" style="float: right; clear: both;">
                                     <label for="total">Total</label>&nbsp;
-                                    <input id="total" type="text" width="15" readonly style="text-align: right;" class="form-control">
+                                    <input id="total" type="text" width="15" readonly style="background-color: transparent; text-align: right;" class="form-control">
                                 </div>
                                 <br><br><br>
                                 <button class="btn btn-primary" type="submit" style="float: right; clear: both;">Save</button>
+                                <input type="hidden" name="invoice_line_id" id="invoice_line_id" value="">
+                                <input type="hidden" name="quantity_returned" id="quantity_returned" value="">
                             </form>
                             <script>
                                 var line = 0;
                                 var line2 = 0;
+                                var invoice = new Array();
+                                var invoicelines = new Array();
+                                var customername = '';
+                                var productnames = new Array();
+                                var amounts = new Array();
+                                function getInvoice()
+                                {
+                                  var invoice_id = document.getElementById('invoice_id').value;
+                                  let _token = $('meta[name="csrf-token"]').attr('content');
+                                  $.ajaxSetup({
+                                    headers: {
+                                      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                    }
+                                  });
+                                  $.ajax({
+                                    type:'POST',
+                                    url:'/creditnote/getinvoice',
+                                    data: {_token: _token, invoice_id: invoice_id},
+                                    dataType: 'json',
+                                    success:function(data) {
+                                      invoice = data.invoice;
+                                      customername = data.customername;
+                                      invoicelines = data.invoicelines;
+                                      productnames = data.productnames;
+                                      if (invoice === null) {
+                                          $(".invoice-lines").remove();
+                                      }
+                                      else {
+                                          $(".invoice-lines").remove();
+                                          displayInvoice();
+                                      }
+                                    },
+                                    error: function(data){
+                                    }
+                                  });
+                                }
+                                function getAmounts(note_line)
+                                {
+                                  let invoice_line_id = note_line.parentNode.parentNode.childNodes[1].childNodes[1].value;
+                                  document.getElementById('invoice_line_id').value = invoice_line_id;
+                                  let quantity_returned = note_line.value;
+                                  document.getElementById('quantity_returned').value = quantity_returned;
+                                  let _token = $('meta[name="csrf-token"]').attr('content');
+                                  $.ajaxSetup({
+                                    headers: {
+                                      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                    }
+                                  });
+                                  $.ajax({
+                                    type:'POST',
+                                    url:'/creditnote/getamounts',
+                                    data: {_token: _token, invoice_line_id: invoice_line_id, quantity_returned: quantity_returned},
+                                    dataType: 'json',
+                                    success:function(data) {
+                                      amounts = data.amounts;
+                                      if (amounts === null) {
+                                          note_line.parentNode.parentNode.childNodes[4].childNodes[0].value = '';
+                                          note_line.parentNode.parentNode.childNodes[5].childNodes[0].value = '';
+                                      }
+                                      else {
+                                          displayAmounts(note_line, amounts);
+                                      }
+                                    },
+                                    error: function(data){
+                                    }
+                                  });
+                                }
+                                function displayInvoice()
+                                {
+                                    document.getElementById('customer_id0').value = customername;
+                                    for (index = 0; index < invoicelines.length; ++index)
+                                    {
+                                        let invoice_line_id = invoicelines[index]['id'];
+                                        let product_name = productnames[index];
+                                        let description = invoicelines[index]['description'];
+                                        if(description == null) {description = "";}
+                                        addItemLines(invoice_line_id, description, null, null, null, product_name);
+                                    }
+                                }
+                                function displayAmounts(note_line, amounts)
+                                {
+                                    note_line.parentNode.parentNode.childNodes[4].childNodes[0].value = amounts["amount"];
+                                    note_line.parentNode.parentNode.childNodes[5].childNodes[0].value = amounts["tax"];
+                                    updateSubtotal();
+                                    updateTotalTax();
+                                }
                                 function setValue (id) 
                                 {
                                     var input = id,
@@ -124,6 +214,7 @@
                                 function addItemLines(a, b, c, d, e, f) {
 
                                     var tr = document.createElement("tr");
+                                    tr.setAttribute("class", "invoice-lines");
                                     var table = document.getElementById("item_lines");
                                     table.appendChild(tr);
 
@@ -145,6 +236,7 @@
                                     productInput.setAttribute("data-id", line2);
                                     productInput.setAttribute("class", "custom-select");
                                     productInput.setAttribute("required", "required");
+                                    productInput.setAttribute("readonly", "readonly");
                                     productInput.setAttribute("value", f);
                                     td1.appendChild(productInput);
 
@@ -171,6 +263,8 @@
                                     descriptionInput.setAttribute("id", "item_lines['description'][]" + line2);
                                     descriptionInput.setAttribute("name", "item_lines['description'][]");
                                     descriptionInput.setAttribute("style", "text-align: left;");
+                                    descriptionInput.setAttribute("style", "background-color: transparent;");
+                                    descriptionInput.setAttribute("readonly", "readonly");
                                     descriptionInput.setAttribute("value", b);
                                     td2.appendChild(descriptionInput);
 
@@ -185,6 +279,7 @@
                                     quantityInput.setAttribute("step", "0.001");
                                     quantityInput.setAttribute("style", "text-align: right;");
                                     quantityInput.setAttribute("value", c);
+                                    quantityInput.setAttribute("oninput", "getAmounts(this)");
                                     td3.appendChild(quantityInput);
 
                                     var td4 = document.createElement("td");
@@ -196,7 +291,7 @@
                                     amountInput.setAttribute("id", "item_lines['amount'][]" + line2);
                                     amountInput.setAttribute("name", "item_lines['amount'][]");
                                     amountInput.setAttribute("step", "0.01");
-                                    amountInput.setAttribute("style", "text-align: right;");
+                                    amountInput.setAttribute("style", "text-align: right; background-color: transparent;");
                                     amountInput.setAttribute("value", d);
                                     amountInput.setAttribute("oninput", "updateSubtotal()");
                                     td4.appendChild(amountInput);
@@ -210,7 +305,7 @@
                                     inputTaxInput.setAttribute("id", "item_lines['output_tax'][]" + line2);
                                     inputTaxInput.setAttribute("name", "item_lines['output_tax'][]");
                                     inputTaxInput.setAttribute("step", "0.01");
-                                    inputTaxInput.setAttribute("style", "text-align: right;");
+                                    inputTaxInput.setAttribute("style", "text-align: right; background-color: transparent;");
                                     inputTaxInput.setAttribute("value", e);
                                     inputTaxInput.setAttribute("oninput", "updateTotalTax()");
                                     td5.appendChild(inputTaxInput);

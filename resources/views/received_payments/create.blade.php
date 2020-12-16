@@ -120,6 +120,7 @@
                                           deleteInvoices();
                                       }
                                       else {
+                                          $(".invoice-lines").remove();
                                           displayInvoices();
                                       }
                                     },
