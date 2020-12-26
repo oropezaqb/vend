@@ -71,17 +71,11 @@ class CreditNoteController extends Controller
                 $company = \Auth::user()->currentCompany->company;
                 $creditNote = new CreditNote([
                     'company_id' => $company->id,
-                    'customer_id' => request('customer_id'),
+                    'invoice_id' => request('invoice_id'),
                     'date' => request('date'),
                     'number' => request('number'),
                 ]);
                 $creditNote->save();
-                $createCreditNote = new CreateCreditNote();
-                $createCreditNote->updateLines($creditNote);
-                $createCreditNote->recordTransaction($creditNote);
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
-                    ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
-                $createCreditNote->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.index'));
         } catch (\Exception $e) {

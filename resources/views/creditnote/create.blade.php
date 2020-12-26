@@ -129,11 +129,16 @@
                                       invoicelines = data.invoicelines;
                                       productnames = data.productnames;
                                       if (invoice === null) {
+                                          document.getElementById('customer_id0').value = '';
                                           $(".invoice-lines").remove();
+                                          updateSubtotal();
+                                          updateTotalTax();
                                       }
                                       else {
                                           $(".invoice-lines").remove();
                                           displayInvoice();
+                                          updateSubtotal();
+                                          updateTotalTax();
                                       }
                                     },
                                     error: function(data){

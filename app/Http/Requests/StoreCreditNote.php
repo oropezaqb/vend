@@ -25,10 +25,10 @@ class StoreCreditNote extends FormRequest
     public function messages()
     {
         return [
-            'customer_id.required' => 'The customer field is required.',
-            'customer_id.exists' =>
-                'The selected customer is invalid. Please choose among the recommended items.',
-            'number.min' => 'The credit note number must be a positive number.',
+            'invoice_id.required' => 'The customer field is required.',
+            'invoice_id.exists' =>
+                'The invoice number is invalid.',
+            'number.min' => 'The credit note number must be positive.',
         ];
     }
 
@@ -40,7 +40,7 @@ class StoreCreditNote extends FormRequest
     public function rules()
     {
         return [
-            'customer_id' => ['required', 'exists:App\Customer,id'],
+            'invoice_id' => ['required', 'exists:App\Invoice,invoice_number'],
             'date' => ['required', 'date'],
             'number' => ['required', 'min:1'],
             "item_lines.'product_id'" => ['sometimes'],
