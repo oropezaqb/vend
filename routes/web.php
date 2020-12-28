@@ -17,6 +17,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/innobooks', function () {
+    return view('innobooks');
+});
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');

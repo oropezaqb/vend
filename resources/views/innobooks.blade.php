@@ -7,7 +7,7 @@
         <meta name="author" content="" />
         <title>InnoBooks</title>
         <!-- Favicon-->
-        <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon.ico') }}" />
+        <link rel="icon" type="image/x-icon" href="{{ asset('assets2/img/favicon.ico') }}" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v5.13.0/js/all.js" crossorigin="anonymous"></script>
         <!-- Google fonts-->
@@ -16,7 +16,7 @@
         <!-- Third party plugin CSS-->
         <link href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css" rel="stylesheet" />
         <!-- Core theme CSS (includes Bootstrap)-->
-        <link href="{{ asset('css/styles.css') }}" rel="stylesheet" />
+        <link href="{{ asset('css2/styles.css') }}" rel="stylesheet" />
     </head>
     <body id="page-top">
         <!-- Navigation-->
@@ -109,6 +109,6 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
         <!-- Core theme JS-->
-        <script src="{{ asset('js/scripts.js') }}"></script>
+        <script src="{{ asset('js2/scripts.js') }}"></script>
     </body>
 </html>
