@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
         <meta name="description" content="" />
         <meta name="author" content="" />
-        <title>Bien Oropeza, CPA - Resume (Accountant and Web Designer)</title>
+        <title>Bien Oropeza, CPA - Accountant and Web Application Developer</title>
         <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon.ico') }}" />
         <!-- Font Awesome icons (free version)-->
         <script src="https://use.fontawesome.com/releases/v5.15.1/js/all.js" crossorigin="anonymous"></script>
@@ -44,10 +44,13 @@
                         <span class="text-primary">Oropeza</span>, CPA
                     </h1>
                     <div class="subheading mb-5">
-                        1014 Bitano, Legazpi, Albay, Philippines · +639452947945 ·
-                        <a href="mailto:name@email.com">bien.oropeza@gmail.com</a>
+                        1014 Bitano, Legazpi, Albay, Philippines ·
+                        <a href="tel:+639452947945">+639452947945</a> ·
+                        <a href="mailto:bien.oropeza@gmail.com">bien.oropeza@gmail.com</a>
                     </div>
-                    <p class="lead mb-5">A Certified Public Accountant with experience in corporate accounting, internal auditing, tax compliance, college teaching and real estate selling. An accounting professional with passion in sofware and web application development (online accounting solution), and website design and development.</p>
+                    <p class="lead mb-5">A Certified Public Accountant with experience in corporate accounting, internal auditing, tax compliance, college teaching and real estate selling. An accounting professional with passion in sofware and web application development (online accounting solution).
+                        Creator of <a href="innobooks">InnoBooks</a>.
+                    </p>
                     <div class="social-icons">
                         <a class="social-icon" href="#"><i class="fab fa-linkedin-in"></i></a>
                         <a class="social-icon" href="#"><i class="fab fa-github"></i></a>
@@ -63,9 +66,17 @@
                     <h2 class="mb-5">Experience</h2>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
+                            <h3 class="mb-0">Real Estate Salesperson</h3>
+                            <div class="subheading mb-3">SL Homes and Properties</div>
+                            <p>Assist in acquisition of residential and commercial real properties.</p>
+                        </div>
+                        <div class="flex-shrink-0"><span class="text-primary">July 2019 - Present</span></div>
+                    </div>
+                    <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
+                        <div class="flex-grow-1">
                             <h3 class="mb-0">College Instructor and Program Chair</h3>
                             <div class="subheading mb-3">Divine Word College of Legazpi</div>
-                            <p>Developed syllabus and overall course structure, and administered all grades.</p>
+                            <p>Develop syllabus and overall course structure, and administer all grades.</p>
                         </div>
                         <div class="flex-shrink-0"><span class="text-primary">June 2017 - June 2020</span></div>
                     </div>
@@ -73,7 +84,7 @@
                         <div class="flex-grow-1">
                             <h3 class="mb-0">College Instructor</h3>
                             <div class="subheading mb-3">University of Sto Tomas Legazpi</div>
-                            <p>Developed syllabus and overall course structure, and administered all grades.</p>
+                            <p>Develop syllabus and overall course structure, and administer all grades.</p>
                         </div>
                         <div class="flex-shrink-0"><span class="text-primary">June 2016 - March 2017</span></div>
                     </div>
@@ -81,7 +92,7 @@
                         <div class="flex-grow-1">
                             <h3 class="mb-0">Finance Analyst</h3>
                             <div class="subheading mb-3">Albay Power and Energy Corporation</div>
-                            <p>Preparation of financial reports, government reportorial requirements, and tax compliances.</p>
+                            <p>Prepare financial reports, government reportorial requirements, and tax compliances.</p>
                         </div>
                         <div class="flex-shrink-0"><span class="text-primary">April 2014 - June 2016</span></div>
                     </div>

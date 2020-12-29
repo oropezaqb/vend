@@ -21,10 +21,6 @@ Route::get('/innobooks', function () {
     return view('innobooks');
 });
 
-Route::get('/services', function () {
-    return view('services');
-});
-
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
