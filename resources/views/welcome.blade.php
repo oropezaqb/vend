@@ -45,7 +45,7 @@
                     </h1>
                     <div class="subheading mb-5">
                         1014 Bitano, Legazpi, Albay, Philippines ·
-                        <a href="tel:+639452947945">+639452947945</a> ·
+                        <a href="tel:+639452947945">(+63) 945-294-7945</a> ·
                         <a href="mailto:bien.oropeza@gmail.com">bien.oropeza@gmail.com</a>
                     </div>
                     <p class="lead mb-5">A Certified Public Accountant with experience in corporate accounting, internal auditing, tax compliance, college teaching and real estate selling. An accounting professional with passion in full-stack web application development.
