@@ -181,7 +181,7 @@
                                     document.getElementById('customer_id0').value = customername;
                                     for (index = 0; index < invoicelines.length; ++index)
                                     {
-                                        let invoice_line_id = invoicelines[index]['id'];
+                                        let invoice_line_id = invoicelines[index]['product_id'];
                                         let product_name = productnames[index];
                                         let description = invoicelines[index]['description'];
                                         if(description == null) {description = "";}

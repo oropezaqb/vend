@@ -17,15 +17,15 @@ use App\InvoiceItemLine;
 
 class CreateCreditNote
 {
-    public function determineAmounts($invoice_line_id, $quantity)
+    public function determineAmounts($invoice_id, $invoice_line_id, $quantity)
     {
-        $invoiceLine = InvoiceItemLine::find($invoice_line_id);
-        $quantitySold = $invoiceLine->quantity;
+        $invoiceLine = Product::find($invoice_line_id);
+        $quantitySold = InvoiceItemLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('quantity');
         $amountSold = $invoiceLine->amount;
         $taxSold = $invoiceLine->output_tax;
-        $quantityReturned = CreditNoteLine::where('invoice_line_id', $invoiceLine->id)->sum('quantity');
-        $amountReturned = CreditNoteLine::where('invoice_line_id', $invoiceLine->id)->sum('amount');
-        $taxReturned = CreditNoteLine::where('invoice_line_id', $invoiceLine->id)->sum('output_tax');
+        $quantityReturned = CreditNoteLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('quantity');
+        $amountReturned = CreditNoteLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('amount');
+        $taxReturned = CreditNoteLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('output_tax');
         $quantityUnreturned = $quantitySold - $quantityReturned;
         $amountUnreturned = $amountSold - $amountReturned;
         $taxUnreturned = $taxSold - $taxReturned;

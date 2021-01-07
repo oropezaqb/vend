@@ -48,13 +48,14 @@
                         <a href="tel:+639452947945">+639452947945</a> ·
                         <a href="mailto:bien.oropeza@gmail.com">bien.oropeza@gmail.com</a>
                     </div>
-                    <p class="lead mb-5">A Certified Public Accountant with experience in corporate accounting, internal auditing, tax compliance, college teaching and real estate selling. An accounting professional with passion in sofware and web application development (online accounting solution).
-                        Creator of <a href="innobooks">InnoBooks</a>.
+                    <p class="lead mb-5">A Certified Public Accountant with experience in corporate accounting, internal auditing, tax compliance, college teaching and real estate selling. An accounting professional with passion in full-stack web application development.
+                        Skilled in using HTML, CSS, Bootstrap, Javascript, JQuery, PHP, Laravel, MySQL, Git, Google Cloud Compute Engine, Apache (LAMP Stack) and Ubuntu OS.
+                        Creator of <a href="innobooks">InnoBooks - Online Accounting Solution</a>.
                     </p>
                     <div class="social-icons">
-                        <a class="social-icon" href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a class="social-icon" href="https://linkedin.com/in/bienoropeza"><i class="fab fa-linkedin-in"></i></a>
                         <a class="social-icon" href="#"><i class="fab fa-github"></i></a>
-                        <a class="social-icon" href="#"><i class="fab fa-twitter"></i></a>
+                        <a class="social-icon" href="https://twitter.com/bienoropeza"><i class="fab fa-twitter"></i></a>
                         <a class="social-icon" href="https://fb.com/bien.oropeza"><i class="fab fa-facebook-f"></i></a>
                     </div>
                 </div>
@@ -66,17 +67,17 @@
                     <h2 class="mb-5">Experience</h2>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
-                            <h3 class="mb-0">Real Estate Salesperson</h3>
+                            <h3 class="mb-0">Licensed Real Estate Salesperson</h3>
                             <div class="subheading mb-3">SL Homes and Properties</div>
-                            <p>Assist in acquisition of residential and commercial real properties.</p>
+                            <p>Assist in the sale or acquisition of residential and commercial real properties.</p>
                         </div>
                         <div class="flex-shrink-0"><span class="text-primary">July 2019 - Present</span></div>
                     </div>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
-                            <h3 class="mb-0">College Instructor and Program Chair</h3>
+                            <h3 class="mb-0">Program Chair</h3>
                             <div class="subheading mb-3">Divine Word College of Legazpi</div>
-                            <p>Develop syllabus and overall course structure, and administer all grades.</p>
+                            <p>Develop syllabus and overall course structure, administer all grades and supervise program instructors.</p>
                         </div>
                         <div class="flex-shrink-0"><span class="text-primary">June 2017 - June 2020</span></div>
                     </div>
@@ -90,9 +91,9 @@
                     </div>
                     <div class="d-flex flex-column flex-md-row justify-content-between mb-5">
                         <div class="flex-grow-1">
-                            <h3 class="mb-0">Finance Analyst</h3>
+                            <h3 class="mb-0">Financial Analyst</h3>
                             <div class="subheading mb-3">Albay Power and Energy Corporation</div>
-                            <p>Prepare financial reports, government reportorial requirements, and tax compliances.</p>
+                            <p>Review journal vouchers, prepare financial reports, government reportorial requirements, and tax compliances.</p>
                         </div>
                         <div class="flex-shrink-0"><span class="text-primary">April 2014 - June 2016</span></div>
                     </div>
@@ -100,7 +101,7 @@
                         <div class="flex-grow-1">
                             <h3 class="mb-0">Audit Staff</h3>
                             <div class="subheading mb-3">Sunwest Construction and Development Corporation</div>
-                            <p>Perform internal audit procedures and prepare audit reports.</p>
+                            <p>Provide inputs in annual audit plans, perform internal audit procedures, prepare audit reports and monitor compliance to action plans.</p>
                         </div>
                         <div class="flex-shrink-0"><span class="text-primary">August 2013 - March 2014</span></div>
                     </div>

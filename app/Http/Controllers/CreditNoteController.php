@@ -64,7 +64,7 @@ class CreditNoteController extends Controller
         return view('creditnote.create',
             compact('customers', 'products'));
     }
-    public function store(StoreCreditNote $request)
+    public function store2(StoreCreditNote $request)
     {
         try {
             \DB::transaction(function () use ($request) {
@@ -172,12 +172,13 @@ class CreditNoteController extends Controller
         }
         return response()->json(array('invoice'=> $invoice, 'customername' => $customer->name, 'invoicelines' => $invoice->itemLines, 'productnames' => $productNames), 200);
     }
-    public function getAmounts(Request $request)
+    public function store(Request $request)
     {
-        $invoice_line_id = $request->input('invoice_line_id');
+        $invoice_id = $request->input('invoice_id');
+        $product_id = $request->input('invoice_line_id');
         $quantity = $request->input('quantity_returned');
         $createCreditNote = new CreateCreditNote();
-        $amounts = $createCreditNote->determineAmounts($invoice_line_id, $quantity);
+        $amounts = $createCreditNote->determineAmounts($invoice_id, $product_id, $quantity);
         if (is_null($amounts)) {
             return response()->json(array('amounts' => null), 200);
         }

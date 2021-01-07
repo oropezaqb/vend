@@ -32,7 +32,8 @@ class CreateCreditNotesTable extends Migration
         Schema::create('credit_note_lines', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('credit_note_id');
-            $table->unsignedBigInteger('invoice_line_id');
+            $table->unsignedBigInteger('invoice_id');
+            $table->unsignedBigInteger('product_id');
             $table->float('quantity', 8, 2)->nullable();
             $table->decimal('amount', 13, 2);
             $table->decimal('output_tax', 13, 2)->default(0);
@@ -41,9 +42,12 @@ class CreateCreditNotesTable extends Migration
                 ->references('id')
                 ->on('credit_notes')
                 ->onDelete('cascade');
-            $table->foreign('invoice_line_id')
+            $table->foreign('invoice_id')
                 ->references('id')
-                ->on('invoice_item_lines');
+                ->on('invoices');
+            $table->foreign('product_id')
+                ->references('id')
+                ->on('products');
         });
     }
 

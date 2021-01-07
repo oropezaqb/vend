@@ -54,11 +54,11 @@
         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionSidebar">
           <div class="bg-white py-2 collapse-inner rounded">
             <h6 class="collapse-header">Customers</h6>
-            <a class="collapse-item" href="invoices">Invoice</a>
-            <a class="collapse-item" href="received_payments">Receive payment</a>
-            <a class="collapse-item" href="creditnote">Credit note</a>
-            <a class="collapse-item" href="sales_receipts">Sales receipt</a>
-            <a class="collapse-item" href="refundreceipt">Refund receipt</a>
+            <a class="collapse-item" href="/invoices">Invoice</a>
+            <a class="collapse-item" href="/received_payments">Receive payment</a>
+            <a class="collapse-item" href="/creditnote">Credit note</a>
+            <a class="collapse-item" href="/sales_receipts">Sales receipt</a>
+            <a class="collapse-item" href="/refundreceipt">Refund receipt</a>
             <h6 class="collapse-header">Suppliers</h6>
             <a class="collapse-item" href="#">Expense</a>
             <a class="collapse-item" href="#">Cheque</a>
