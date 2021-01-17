@@ -21,8 +21,8 @@ class CreateCreditNote
     {
         $invoiceLine = Product::find($invoice_line_id);
         $quantitySold = InvoiceItemLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('quantity');
-        $amountSold = $invoiceLine->amount;
-        $taxSold = $invoiceLine->output_tax;
+        $amountSold = InvoiceItemLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('amount');
+        $taxSold = InvoiceItemLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('output_tax');
         $quantityReturned = CreditNoteLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('quantity');
         $amountReturned = CreditNoteLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('amount');
         $taxReturned = CreditNoteLine::where('invoice_id', $invoice_id)->where('product_id', $invoiceLine->id)->sum('output_tax');
@@ -30,7 +30,7 @@ class CreateCreditNote
         $amountUnreturned = $amountSold - $amountReturned;
         $taxUnreturned = $taxSold - $taxReturned;
         $amounts = array();
-        if($quantity > 0 && $quantity < $quantityUnreturned)
+        if(($quantity > 0) && ($quantity < $quantityUnreturned))
         {
             $amounts['amount'] = round(($amountUnreturned / $quantityUnreturned) * $quantity, 2);
             $amounts['tax'] = round(($taxUnreturned / $quantityUnreturned) * $quantity, 2);

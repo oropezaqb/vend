@@ -147,9 +147,10 @@
                                 }
                                 function getAmounts(note_line)
                                 {
-                                  let invoice_line_id = note_line.parentNode.parentNode.childNodes[1].childNodes[1].value;
+                                  var invoice_id = document.getElementById('invoice_id').value;
+                                  var invoice_line_id = note_line.parentNode.parentNode.childNodes[1].childNodes[1].value;
                                   document.getElementById('invoice_line_id').value = invoice_line_id;
-                                  let quantity_returned = note_line.value;
+                                  var quantity_returned = note_line.value;
                                   document.getElementById('quantity_returned').value = quantity_returned;
                                   let _token = $('meta[name="csrf-token"]').attr('content');
                                   $.ajaxSetup({
@@ -160,7 +161,7 @@
                                   $.ajax({
                                     type:'POST',
                                     url:'/creditnote/getamounts',
-                                    data: {_token: _token, invoice_line_id: invoice_line_id, quantity_returned: quantity_returned},
+                                    data: {_token: _token, invoice_id: invoice_id, invoice_line_id: invoice_line_id, quantity_returned: quantity_returned},
                                     dataType: 'json',
                                     success:function(data) {
                                       amounts = data.amounts;

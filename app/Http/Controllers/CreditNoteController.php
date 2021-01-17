@@ -182,6 +182,6 @@ class CreditNoteController extends Controller
         if (is_null($amounts)) {
             return response()->json(array('amounts' => null), 200);
         }
-        return response()->json(array('amounts'=> $amounts), 200);
+        return response()->json(array('amounts' => $amounts), 200);
     }
 }

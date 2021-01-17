@@ -31,7 +31,7 @@ Route::get('/products/import', 'ProductController@import')->name('products.impor
 Route::post('/products/upload', 'ProductController@upload')->name('products.upload');
 Route::post('/received_payments/ajax-request', 'AjaxController@store');
 Route::post('/creditnote/getinvoice', 'CreditNoteController@getInvoice');
-Route::post('/creditnote/getamounts', 'CreditNoteController@getAmounts');
+Route::post('/creditnote/getamounts', 'CreditNoteController@store');
 
 Route::resources([
     'companies' => 'CompanyController',
