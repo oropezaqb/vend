@@ -34,6 +34,7 @@ class CreateCreditNotesTable extends Migration
             $table->unsignedBigInteger('credit_note_id');
             $table->unsignedBigInteger('invoice_id');
             $table->unsignedBigInteger('product_id');
+            $table->text('description')->nullable();
             $table->float('quantity', 8, 2)->nullable();
             $table->decimal('amount', 13, 2);
             $table->decimal('output_tax', 13, 2)->default(0);

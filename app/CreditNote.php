@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CreditNote extends Model
 {
+    protected $guarded = [];
     public function path()
     {
         return route('creditnote.show', $this);
@@ -21,6 +22,10 @@ class CreditNote extends Model
     public function journalEntry()
     {
         return $this->morphOne('App\JournalEntry', 'journalizable');
+    }
+    public function invoice()
+    {
+        return $this->belongsTo(Invoice::class, 'invoice_id');
     }
     public function delete()
     {

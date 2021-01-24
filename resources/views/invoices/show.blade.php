@@ -229,8 +229,8 @@
                                     var inputTaxInput = document.createElement("input");
                                     inputTaxInput.setAttribute("type", "number");
                                     inputTaxInput.setAttribute("class", "form-control tax");
-                                    inputTaxInput.setAttribute("id", "item_lines['input_tax'][]" + line2);
-                                    inputTaxInput.setAttribute("name", "item_lines['input_tax'][]");
+                                    inputTaxInput.setAttribute("id", "item_lines['output_tax'][]" + line2);
+                                    inputTaxInput.setAttribute("name", "item_lines['output_tax'][]");
                                     inputTaxInput.setAttribute("step", "0.01");
                                     inputTaxInput.setAttribute("style", "text-align: right;");
                                     inputTaxInput.setAttribute("value", e);
@@ -332,7 +332,7 @@
                                     var b = <?php echo json_encode(old("item_lines.'description'")); ?>;
                                     var c = <?php echo json_encode(old("item_lines.'quantity'")); ?>;
                                     var d = <?php echo json_encode(old("item_lines.'amount'")); ?>;
-                                    var e = <?php echo json_encode(old("item_lines.'input_tax'")); ?>;
+                                    var e = <?php echo json_encode(old("item_lines.'output_tax'")); ?>;
                                     var f = <?php echo json_encode(old("item_lines.'product_name'")); ?>;
                                     var i;
                                     for (i = 0; i < a.length; i++)
@@ -356,7 +356,7 @@
                                             var b = itemLine['description'];
                                             var c = itemLine['quantity'];
                                             var d = itemLine['amount'];
-                                            var e = itemLine['input_tax'];
+                                            var e = itemLine['output_tax'];
                                             var f = <?php echo json_encode(\App\Product::where('id', $itemLine->product_id)->firstOrFail()->name); ?>;
                                             if(a == null) {a = "";}
                                             if(b == null) {b = "";}
