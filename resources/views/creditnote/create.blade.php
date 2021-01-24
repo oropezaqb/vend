@@ -180,6 +180,8 @@
                                 function displayInvoice()
                                 {
                                     document.getElementById('customer_id0').value = customername;
+                                    document.getElementById('customer_id0-hidden').value = customername;
+                                    document.getElementById('name-customer_id0-hidden').value = customername;
                                     for (index = 0; index < invoicelines.length; ++index)
                                     {
                                         let invoice_line_id = invoicelines[index]['product_id'];
