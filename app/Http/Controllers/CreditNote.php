@@ -31,18 +31,14 @@ class CreditNote extends Controller
     public function index()
     {
         $company = \Auth::user()->currentCompany->company;
-        if (empty(request('customer_name')))
-        {
+        if (empty(request('customer_name'))) {
             $creditNotes = CreditNote::where('company_id', $company->id)->latest()->get();
-        }
-        else
-        {
+        } else {
             $customer = Customer::where('name', request('customer_name'))->firstOrFail();
             $creditNotes = CreditNote::where('company_id', $company->id)
                 ->where('customer_id', $customer->id)->latest()->get();
         }
-        if (\Route::currentRouteName() === 'creditnote.index')
-        {
+        if (\Route::currentRouteName() === 'creditnote.index') {
             \Request::flash();
         }
         return view('creditnote.index', compact('creditNotes'));
@@ -52,16 +48,20 @@ class CreditNote extends Controller
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('creditnote.show',
-            compact('creditNote', 'customers', 'products'));
+        return view(
+            'creditnote.show',
+            compact('creditNote', 'customers', 'products')
+        );
     }
     public function create()
     {
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('sales_receipts.create',
-            compact('customers', 'products'));
+        return view(
+            'sales_receipts.create',
+            compact('customers', 'products')
+        );
     }
     public function store(StoreCreditNote $request)
     {
@@ -90,18 +90,21 @@ class CreditNote extends Controller
     public function translateError($e)
     {
         switch ($e->getCode()) {
-        case '23000':
-            if (preg_match("/for key '(.*)'/",
-              $e->getMessage(), $m)) {
-                $indexes = array(
-                  'my_unique_ref' =>
+            case '23000':
+                if (preg_match(
+                    "/for key '(.*)'/",
+                    $e->getMessage(),
+                    $m
+                )) {
+                    $indexes = array(
+                      'my_unique_ref' =>
                     array ('Credit note is already recorded.', 'number'));
-                if (isset($indexes[$m[1]])) {
-                    $this->err_flds = array($indexes[$m[1]][1] => 1);
-                    return $indexes[$m[1]][0];
+                    if (isset($indexes[$m[1]])) {
+                        $this->err_flds = array($indexes[$m[1]][1] => 1);
+                        return $indexes[$m[1]][0];
+                    }
                 }
-            }
-        break;
+                break;
         }
         return $e->getMessage();
     }
@@ -111,8 +114,10 @@ class CreditNote extends Controller
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('creditnote.edit',
-            compact('creditNote', 'customers', 'products'));
+        return view(
+            'creditnote.edit',
+            compact('creditNote', 'customers', 'products')
+        );
     }
     public function update(StoreCreditNote $request, CreditNote $creditNote)
     {
@@ -129,11 +134,11 @@ class CreditNote extends Controller
                 ]);
                 $creditNote->save();
                 $changeDate = $newDate;
-                if ($oldDate < $newDate)
-                {
+                if ($oldDate < $newDate) {
                     $changeDate = $oldDate;
                 }
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                    ->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
                 $creditNote->journalEntry()->delete();
                 $createCreditNote = new CreateCreditNote();
                 $createCreditNote->deleteCreditNote($creditNote);

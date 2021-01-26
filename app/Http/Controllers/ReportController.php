@@ -77,11 +77,12 @@ class ReportController extends Controller
     {
         return view('reports.trial_balance');
     }
-    public function run (Request $request) {
+    public function run(Request $request)
+    {
         $query = new Query();
         $query->title = "Trial Balance";
         $date = DateTime::createFromFormat('Y-m-d', "$request->date");
-        $query->date = 'As of ' . date_format($date,'M d, Y');
+        $query->date = 'As of ' . date_format($date, 'M d, Y');
         $db = new DbAccess();
         $stmt = $db->query("SELECT accounts.id, accounts.title, accounts.type AS theType, SUM(debit) debit
             FROM journal_entries

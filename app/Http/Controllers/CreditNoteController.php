@@ -32,18 +32,14 @@ class CreditNoteController extends Controller
     public function index()
     {
         $company = \Auth::user()->currentCompany->company;
-        if (empty(request('customer_name')))
-        {
+        if (empty(request('customer_name'))) {
             $creditNotes = CreditNote::where('company_id', $company->id)->latest()->get();
-        }
-        else
-        {
+        } else {
             $customer = Customer::where('name', request('customer_name'))->firstOrFail();
             $creditNotes = CreditNote::where('company_id', $company->id)
                 ->where('customer_id', $customer->id)->latest()->get();
         }
-        if (\Route::currentRouteName() === 'creditnote.index')
-        {
+        if (\Route::currentRouteName() === 'creditnote.index') {
             \Request::flash();
         }
         return view('creditnote.index', compact('creditNotes'));
@@ -53,16 +49,20 @@ class CreditNoteController extends Controller
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('creditnote.show',
-            compact('creditNote', 'customers', 'products'));
+        return view(
+            'creditnote.show',
+            compact('creditNote', 'customers', 'products')
+        );
     }
     public function create()
     {
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('creditnote.create',
-            compact('customers', 'products'));
+        return view(
+            'creditnote.create',
+            compact('customers', 'products')
+        );
     }
     public function store(StoreCreditNote $request)
     {
@@ -85,18 +85,21 @@ class CreditNoteController extends Controller
     public function translateError($e)
     {
         switch ($e->getCode()) {
-        case '23000':
-            if (preg_match("/for key '(.*)'/",
-              $e->getMessage(), $m)) {
-                $indexes = array(
-                  'my_unique_ref' =>
+            case '23000':
+                if (preg_match(
+                    "/for key '(.*)'/",
+                    $e->getMessage(),
+                    $m
+                )) {
+                    $indexes = array(
+                      'my_unique_ref' =>
                     array ('Credit note is already recorded.', 'number'));
-                if (isset($indexes[$m[1]])) {
-                    $this->err_flds = array($indexes[$m[1]][1] => 1);
-                    return $indexes[$m[1]][0];
+                    if (isset($indexes[$m[1]])) {
+                        $this->err_flds = array($indexes[$m[1]][1] => 1);
+                        return $indexes[$m[1]][0];
+                    }
                 }
-            }
-        break;
+                break;
         }
         return $e->getMessage();
     }
@@ -106,8 +109,10 @@ class CreditNoteController extends Controller
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
-        return view('creditnote.edit',
-            compact('creditNote', 'customers', 'products'));
+        return view(
+            'creditnote.edit',
+            compact('creditNote', 'customers', 'products')
+        );
     }
     public function update(StoreCreditNote $request, CreditNote $creditNote)
     {
@@ -124,11 +129,11 @@ class CreditNoteController extends Controller
                 ]);
                 $creditNote->save();
                 $changeDate = $newDate;
-                if ($oldDate < $newDate)
-                {
+                if ($oldDate < $newDate) {
                     $changeDate = $oldDate;
                 }
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('type', 'sale')->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
                 $creditNote->journalEntry()->delete();
                 $createCreditNote = new CreateCreditNote();
                 $createCreditNote->deleteCreditNote($creditNote);
@@ -148,7 +153,8 @@ class CreditNoteController extends Controller
                 $company = \Auth::user()->currentCompany->company;
                 $creditNoteDate = $creditNote->date;
                 $creditNote->delete();
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('type', 'sale')
                     ->where('date', '>=', $creditNoteDate)->orderBy('date', 'asc')->get();
                 $createCreditNote = new CreateCreditNote();
                 $createCreditNote->updateSales($salesForUpdate);
@@ -163,22 +169,24 @@ class CreditNoteController extends Controller
         $id = $request->input('invoice_id');
         $invoice = Invoice::where('invoice_number', $id)->first();
         if (is_null($invoice)) {
-            return response()->json(array('invoice' => null, 'customername' => null, 'invoicelines' => null, 'productnames' => null), 200);
+            return response()->json(array('invoice' => null, 'customername' => null,
+                'invoicelines' => null, 'productnames' => null), 200);
         }
         $customer = $invoice->customer;
         $productNames = array();
         foreach ($invoice->itemLines as $invoiceLine) {
             $productNames[] = array($invoiceLine->product->name);
         }
-        return response()->json(array('invoice'=> $invoice, 'customername' => $customer->name, 'invoicelines' => $invoice->itemLines, 'productnames' => $productNames), 200);
+        return response()->json(array('invoice'=> $invoice, 'customername' => $customer->name,
+            'invoicelines' => $invoice->itemLines, 'productnames' => $productNames), 200);
     }
     public function getAmounts(Request $request)
     {
-        $invoice_id = $request->input('invoice_id');
-        $product_id = $request->input('invoice_line_id');
+        $invoiceId = $request->input('invoice_id');
+        $productId = $request->input('invoice_line_id');
         $quantity = $request->input('quantity_returned');
         $createCreditNote = new CreateCreditNote();
-        $amounts = $createCreditNote->determineAmounts($invoice_id, $product_id, $quantity);
+        $amounts = $createCreditNote->determineAmounts($invoiceId, $productId, $quantity);
         if (is_null($amounts)) {
             return response()->json(array('amounts' => null), 200);
         }

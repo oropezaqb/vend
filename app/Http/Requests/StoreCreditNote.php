@@ -59,8 +59,7 @@ class StoreCreditNote extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            if (!is_int(filter_var(request('number'), FILTER_VALIDATE_INT)))
-            {
+            if (!is_int(filter_var(request('number'), FILTER_VALIDATE_INT))) {
                 $validator->errors()->add('number', 'Credit note number must be an integer.');
             }
             if (is_null(request("item_lines.'product_id'"))) {
@@ -86,8 +85,7 @@ class StoreCreditNote extends FormRequest
                     ': Product is invalid.');
             }
             if (is_numeric(request("item_lines.'amount'.".$row)) &&
-            request("item_lines.'amount'.".$row) > 0)
-            {
+            request("item_lines.'amount'.".$row) > 0) {
                 $thereIsAmount = true;
             }
             $this->validateItemQuantity($validator, $row);
@@ -95,7 +93,10 @@ class StoreCreditNote extends FormRequest
             $this->validateItemTax($validator, $row, $productExists);
         }
         if (!$thereIsAmount) {
-            $validator->errors()->add('item_lines', 'Item lines: There should be at least one positive amount.');
+            $validator->errors()->add(
+                'item_lines',
+                'Item lines: There should be at least one positive amount.'
+            );
         }
         $this->valProdQuanti($validator, $count);
     }
@@ -107,12 +108,11 @@ class StoreCreditNote extends FormRequest
                 if (request("item_lines.'quantity'.".$row) < 0.001) {
                     $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                         ': Quantity must be at least 0.001.');
+                } else {
+                    $productQuantity[request("item_lines.'product_id'.".$row)]
+                        += request("item_lines.'quantity'.".$row);
                 }
-                else {
-                    $productQuantity[request("item_lines.'product_id'.".$row)] += request("item_lines.'quantity'.".$row);
-                }
-            }
-            else {
+            } else {
                 $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                     ': Quantity must be a number.');
             }
@@ -125,23 +125,24 @@ class StoreCreditNote extends FormRequest
             $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
         }
         $createCreditNote = new CreateCreditNote();
-        $itemAmounts = $createCreditNote->determineAmounts(request("invoice_id"), request("item_lines.'product_id'.".$row), request("item_lines.'quantity'.".$row));
-        if (is_null(request("item_lines.'amount'.".$row)))
-        {
+        $itemAmounts = $createCreditNote->determineAmounts(
+            request("invoice_id"),
+            request("item_lines.'product_id'.".$row),
+            request("item_lines.'quantity'.".$row)
+        );
+        if (is_null(request("item_lines.'amount'.".$row))) {
             if (!is_null(request("item_lines.'quantity'.".$row))) {
                 $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                     ': Amount required.');
             }
-        }
-        else {
+        } else {
             if (is_numeric(request("item_lines.'amount'.".$row))) {
                 if ($product->track_quantity) {
                     if (request("item_lines.'amount'.".$row) != $itemAmounts['amount']) {
                         $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                             ': Amount must be ' . $itemAmounts['amount'] . '.');
                     }
-                }
-                else {
+                } else {
                     if (request("item_lines.'amount'.".$row) > $itemAmounts['amount']) {
                         $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                             ': Amount must not exceed ' . $itemAmounts['amount'] . '.');
@@ -151,8 +152,7 @@ class StoreCreditNote extends FormRequest
                             ': Amount must be a positive number.');
                     }
                 }
-            }
-            else {
+            } else {
                 $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                     ': Amount must be a number.');
             }
@@ -165,16 +165,19 @@ class StoreCreditNote extends FormRequest
             $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
         }
         $createCreditNote = new CreateCreditNote();
-        $itemAmounts = $createCreditNote->determineAmounts(request("invoice_id"), request("item_lines.'product_id'.".$row), request("item_lines.'quantity'.".$row));
-        $maxTax = ( $itemAmounts['tax_unreturned'] / $itemAmounts['amount_unreturned'] ) * request("item_lines.'amount'.".$row);
+        $itemAmounts = $createCreditNote->determineAmounts(
+            request("invoice_id"),
+            request("item_lines.'product_id'.".$row),
+            request("item_lines.'quantity'.".$row)
+        );
+        $maxTax = ( $itemAmounts['tax_unreturned'] / $itemAmounts['amount_unreturned'] )
+            * request("item_lines.'amount'.".$row);
         if (is_null(request("item_lines.'output_tax'.".$row))) {
             $this->validateTaxAmount($validator, $row, $product, $itemAmounts, $maxTax);
-        }
-        else {
+        } else {
             if (is_numeric(request("item_lines.'output_tax'.".$row))) {
                 $this->validateTaxAmount($validator, $row, $product, $itemAmounts, $maxTax);
-            }
-            else {
+            } else {
                 $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                     ': Tax must be a number.');
             }
@@ -187,8 +190,7 @@ class StoreCreditNote extends FormRequest
                 $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                     ': Tax must be ' . $itemAmounts['tax'] . '.');
             }
-        }
-        else {
+        } else {
             if (request("item_lines.'output_tax'.".$row) != $maxTax) {
                 $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                     ': Tax must be ' . $maxTax . '.');
@@ -204,7 +206,11 @@ class StoreCreditNote extends FormRequest
                 $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
                 if ($product->track_quantity) {
                     $createCreditNote = new CreateCreditNote();
-                    $itemAmounts = $createCreditNote->determineAmounts(request("invoice_id"), request("item_lines.'product_id'.".$row), request("item_lines.'quantity'.".$row));
+                    $itemAmounts = $createCreditNote->determineAmounts(
+                        request("invoice_id"),
+                        request("item_lines.'product_id'.".$row),
+                        request("item_lines.'quantity'.".$row)
+                    );
                     if ($productQuantity[request("item_lines.'product_id'.".$row)] > $itemAmounts['quantity_unreturned']) {
                         $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                             ': Total quantity for this product must not exceed ' . $itemAmounts['quantity_unreturned'] . '.');
