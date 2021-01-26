@@ -90,15 +90,16 @@ class StoreCreditNote extends FormRequest
             {
                 $thereIsAmount = true;
             }
-            $this->validateItemQuantity($validator, $row, $productExists);
+            $this->validateItemQuantity($validator, $row);
             $this->validateItemAmount($validator, $row, $productExists);
+            $this->validateItemTax($validator, $row);
         }
         if (!$thereIsAmount) {
             $validator->errors()->add('item_lines', 'Item lines: There should be at least one positive amount.');
         }
         $this->valProdQuanti($validator, $count);
     }
-    public function validateItemQuantity($validator, $row, $productExists)
+    public function validateItemQuantity($validator, $row)
     {
         global $productQuantity;
         if (!is_null(request("item_lines.'quantity'.".$row))) {
@@ -156,6 +157,9 @@ class StoreCreditNote extends FormRequest
                     ': Amount must be a number.');
             }
         }
+    }
+    public function validateItemTax($validator, $row)
+    {
         $maxTax = ( $itemAmounts['tax_unreturned'] / $itemAmounts['amount_unreturned'] ) * request("item_lines.'amount'.".$row);
         if (is_null(request("item_lines.'output_tax'.".$row))) {
             if ($product->track_quantity) {
@@ -201,7 +205,7 @@ class StoreCreditNote extends FormRequest
                 $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
                 if ($product->track_quantity) {
                     $createCreditNote = new CreateCreditNote();
-                    $itemAmounts = $createCreditNote->determineAmounts(request("invoice_id"), request("item_lines.'product_id'.".$row), request("item_lines.'quantity'.".$row)$
+                    $itemAmounts = $createCreditNote->determineAmounts(request("invoice_id"), request("item_lines.'product_id'.".$row), request("item_lines.'quantity'.".$row));
                     if ($productQuantity[request("item_lines.'product_id'.".$row)] > $itemAmounts['quantity_unreturned']) {
                         $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                             ': Total quantity for this product must not exceed ' . $itemAmounts['quantity_unreturned'] . '.');
