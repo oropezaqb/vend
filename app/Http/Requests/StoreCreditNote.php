@@ -92,7 +92,7 @@ class StoreCreditNote extends FormRequest
             }
             $this->validateItemQuantity($validator, $row);
             $this->validateItemAmount($validator, $row, $productExists);
-            $this->validateItemTax($validator, $row);
+            $this->validateItemTax($validator, $row, $productExists);
         }
         if (!$thereIsAmount) {
             $validator->errors()->add('item_lines', 'Item lines: There should be at least one positive amount.');
@@ -158,41 +158,40 @@ class StoreCreditNote extends FormRequest
             }
         }
     }
-    public function validateItemTax($validator, $row)
+    public function validateItemTax($validator, $row, $productExists)
     {
+        $product = new Product();
+        if ($productExists) {
+            $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
+        }
+        $createCreditNote = new CreateCreditNote();
+        $itemAmounts = $createCreditNote->determineAmounts(request("invoice_id"), request("item_lines.'product_id'.".$row), request("item_lines.'quantity'.".$row));
         $maxTax = ( $itemAmounts['tax_unreturned'] / $itemAmounts['amount_unreturned'] ) * request("item_lines.'amount'.".$row);
         if (is_null(request("item_lines.'output_tax'.".$row))) {
-            if ($product->track_quantity) {
-                if (request("item_lines.'output_tax'.".$row) != $itemAmounts['tax']) {
-                    $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                        ': Tax must be ' . $itemAmounts['tax'] . '.');
-                }
-            }
-            else {
-                if (!is_null(request("item_lines.'amount'.".$row))) {
-                    $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                        ': Tax must be ' . $maxTax . '.');
-                }
-            }
+            $this->validateTaxAmount($validator, $row, $product, $itemAmounts, $maxTax);
         }
         else {
             if (is_numeric(request("item_lines.'output_tax'.".$row))) {
-                if ($product->track_quantity) {
-                    if (request("item_lines.'output_tax'.".$row) != $itemAmounts['tax']) {
-                        $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                            ': Tax must be ' . $itemAmounts['tax'] . '.');
-                    }
-                }
-                else {
-                    if (request("item_lines.'output_tax'.".$row) != $maxTax) {
-                        $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                            ': Tax must be ' . $maxTax . '.');
-                    }
-                }
+                $this->validateTaxAmount($validator, $row, $product, $itemAmounts, $maxTax);
             }
             else {
                 $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                     ': Tax must be a number.');
+            }
+        }
+    }
+    public function validateTaxAmount($validator, $row, $product, $itemAmounts, $maxTax)
+    {
+        if ($product->track_quantity) {
+            if (request("item_lines.'output_tax'.".$row) != $itemAmounts['tax']) {
+                $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
+                    ': Tax must be ' . $itemAmounts['tax'] . '.');
+            }
+        }
+        else {
+            if (request("item_lines.'output_tax'.".$row) != $maxTax) {
+                $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
+                    ': Tax must be ' . $maxTax . '.');
             }
         }
     }
