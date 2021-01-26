@@ -34,6 +34,7 @@ class CreateCreditNote
         $amounts['tax'] = 0;
         $amounts['amount_unreturned'] = $amountUnreturned;
         $amounts['tax_unreturned'] = $taxUnreturned;
+        $amounts['quantity_unreturned'] = $quantityUnreturned;
         if(($quantity > 0) && ($quantity < $quantityUnreturned))
         {
             $amounts['amount'] = round(($amountUnreturned / $quantityUnreturned) * $quantity, 2);

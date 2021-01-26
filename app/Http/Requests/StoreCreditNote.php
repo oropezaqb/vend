@@ -13,6 +13,7 @@ use App\Jobs\CreateCreditNote;
 
 class StoreCreditNote extends FormRequest
 {
+    private $productQuantity = array();
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -74,6 +75,10 @@ class StoreCreditNote extends FormRequest
     {
         $count = count(request("item_lines.'product_id'"));
         $thereIsAmount = false;
+        global $productQuantity;
+        for ($row = 0; $row < $count; $row++) {
+            $productQuantity[request("item_lines.'product_id'.".$row)] = 0;
+        }
         for ($row = 0; $row < $count; $row++) {
             $productExists = Product::where('id', request("item_lines.'product_id'.".$row))->exists();
             if (!$productExists) {
@@ -91,9 +96,24 @@ class StoreCreditNote extends FormRequest
         if (!$thereIsAmount) {
             $validator->errors()->add('item_lines', 'Item lines: There should be at least one positive amount.');
         }
+        for ($row = 0; $row < $count; $row++) {
+            $productExists = Product::where('id', request("item_lines.'product_id'.".$row))->exists();
+            if ($productExists) {
+                $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
+                if ($product->track_quantity) {
+                    $createCreditNote = new CreateCreditNote();
+                    $itemAmounts = $createCreditNote->determineAmounts(request("invoice_id"), request("item_lines.'product_id'.".$row), request("item_lines.'quantity'.".$row));
+                    if ($productQuantity[request("item_lines.'product_id'.".$row)] > $itemAmounts['quantity_unreturned']) {
+                        $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
+                            ': Total quantity for this product must not exceed ' . $itemAmounts['quantity_unreturned'] . '.');
+                    }
+                }
+            }
+        }
     }
     public function validateItemQuantity($validator, $row, $productExists)
     {
+        global $productQuantity;
         if (is_null(request("item_lines.'quantity'.".$row))) {
             if ($productExists) {
                 $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
@@ -108,6 +128,9 @@ class StoreCreditNote extends FormRequest
                 if (request("item_lines.'quantity'.".$row) < 0.001) {
                     $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                         ': Quantity must be at least 0.001.');
+                }
+                else {
+                    $productQuantity[request("item_lines.'product_id'.".$row)] += request("item_lines.'quantity'.".$row);
                 }
             }
             else {
@@ -182,10 +205,6 @@ class StoreCreditNote extends FormRequest
                     if (request("item_lines.'output_tax'.".$row) != $maxTax) {
                         $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                             ': Tax must be ' . $maxTax . '.');
-                    }
-                    if (request("item_lines.'output_tax'.".$row) < 0) {
-                        //$validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                        //    ': Tax must be a positive number.');
                     }
                 }
             }
