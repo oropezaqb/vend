@@ -55,13 +55,13 @@ class CreateCreditNote
     {
         if (!is_null(request("item_lines.'product_id'"))) {
             $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++)
-            {
+            for ($row = 0; $row < $count; $row++) {
                 $outputTax = 0;
                 if (!is_null(request("item_lines.'output_tax'.".$row))) {
                     $outputTax = request("item_lines.'output_tax'.".$row);
                 }
-                if (!is_null(request("item_lines.'amount'.".$row)) && is_numeric(request("item_lines.'amount'.".$row))) {
+                if (!is_null(request("item_lines.'amount'.".$row)) &&
+                    is_numeric(request("item_lines.'amount'.".$row))) {
                     if (request("item_lines.'amount'.".$row) > 0) {
                         $itemLine = new CreditNoteLine([
                             'credit_note_id' => $creditNote->id,
