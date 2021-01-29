@@ -211,9 +211,11 @@ class StoreCreditNote extends FormRequest
                         request("item_lines.'product_id'.".$row),
                         request("item_lines.'quantity'.".$row)
                     );
-                    if ($productQuantity[request("item_lines.'product_id'.".$row)] > $itemAmounts['quantity_unreturned']) {
+                    if ($productQuantity[request("item_lines.'product_id'.".$row)]
+                        > $itemAmounts['quantity_unreturned']) {
                         $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                            ': Total quantity for this product must not exceed ' . $itemAmounts['quantity_unreturned'] . '.');
+                            ': Total quantity for this product must not exceed '
+                                . $itemAmounts['quantity_unreturned'] . '.');
                     }
                 }
             }

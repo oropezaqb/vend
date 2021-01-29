@@ -76,6 +76,14 @@ class CreditNoteController extends Controller
                     'number' => request('number'),
                 ]);
                 $creditNote->save();
+                $createCreditNote = new CreateCreditNote();
+                $createCreditNote->updateLines($creditNote);
+                $createCreditNote->recordJournalEntry($creditNote);
+                $createCreditNote->recordPurchases($creditNote);
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                    ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
+                $createInvoice = new CreateInvoice();
+                $createInvoice->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.index'));
         } catch (\Exception $e) {
