@@ -2,7 +2,7 @@
 @section('content')
     <div class="col-md-12">
         <div class="card">
-            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->currentCompany->company->name }} (Add a New Credit Note)</div>
+            <div class="card-header font-weight-bold">Company: {{ \Auth::user()->currentCompany->company->name }} (View Credit Note)</div>
             <div class="card-body">
                 <div id="wrapper">
                     <div id="page" class="container">
@@ -12,8 +12,9 @@
                                     {{ session('status') }}
                                 </div>
                             @endif
-                            <form method="POST" action="/creditnote">
+                            <form method="POST" action="/creditnote/{{ $creditNote->id }}">
                                 @csrf
+                                @method('PUT')
                                 @if ($errors->any())
                                     <div class="alert alert-danger">
                                         <ul>
@@ -36,28 +37,28 @@
                                 <div class="form-group custom-control-inline">
                                     <label for="number">Find&nbsp;by&nbsp;invoice&nbsp;no.&nbsp;</label>&nbsp;
                                     <input type="number" class="form-control" id="invoice_number" name="invoice_number" style="text-align: right;"
-                                        required value="{!! old('invoice_number') !!}" oninput="getInvoice()">
-                                    <input type="hidden" name="invoice_id" id="invoice_id" value="{!! old('invoice_id') !!}">
+                                        required value="{!! old('invoice_number', $creditNote->invoice->invoice_number) !!}" oninput="getInvoice()">
+                                    <input type="hidden" name="invoice_id" id="invoice_id" value="{!! old('invoice_id', $creditNote->invoice_id) !!}">
                                 </div>
                                 <div class="form-group custom-control-inline">
                                     <label for="customer_id">Customer</label>&nbsp;
-                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this)" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name') !!}" readonly>
+                                    <input list="customer_ids" id="customer_id0" onchange="setValue(this)" data-id="" class="custom-select @error('customer_id') is-danger @enderror" required value="{!! old('customer_name', $creditNote->invoice->customer->name) !!}" readonly>
                                     <datalist id="customer_ids">
                                         @foreach ($customers as $customer)
                                             <option data-value="{{ $customer->id }}">{{ $customer->name }}</option>
                                         @endforeach
                                     </datalist>
-                                    <input type="hidden" name="customer_id" id="customer_id0-hidden" value="{!! old('customer_id') !!}">
-                                    <input type="hidden" name="customer_name" id="name-customer_id0-hidden" value="{!! old('customer_name') !!}">
+                                    <input type="hidden" name="customer_id" id="customer_id0-hidden" value="{!! old('customer_id', $creditNote->invoice->customer_id) !!}">
+                                    <input type="hidden" name="customer_name" id="name-customer_id0-hidden" value="{!! old('customer_name', $creditNote->invoice->customer->name) !!}">
                                 </div>
                                 <br><br>
                                 <div class="form-group custom-control-inline">
                                     <label for="date">Credit&nbsp;Note&nbsp;date&nbsp;</label>&nbsp;
-                                    <input type="date" class="form-control @error('date') is-danger @enderror" id="date" name="date" required value="{!! old('date') !!}">
+                                    <input type="date" class="form-control @error('date') is-danger @enderror" id="date" name="date" required value="{!! old('date', $creditNote->date) !!}">
                                 </div>
                                 <div class="form-group custom-control-inline">
                                     <label for="number">Credit&nbsp;Note&nbsp;no.&nbsp;</label>&nbsp;
-                                    <input type="number" class="form-control" id="number" name="number" style="text-align: right;" required value="{!! old('number') !!}">
+                                    <input type="number" class="form-control" id="number" name="number" style="text-align: right;" required value="{!! old('number', $creditNote->number) !!}">
                                 </div>
                                 <br><br>
                                 <div style="text-align: right;"><p>Amounts are Exclusive of Tax</p></div>
@@ -99,10 +100,21 @@
                                     <input id="total" type="text" width="15" readonly style="background-color: transparent; text-align: right;" class="form-control">
                                 </div>
                                 <br><br><br>
-                                <button class="btn btn-primary" type="submit" style="float: right; clear: both;">Save</button>
                                 <input type="hidden" name="invoice_line_id" id="invoice_line_id" value="">
                                 <input type="hidden" name="quantity_returned" id="quantity_returned" value="">
                             </form>
+                            <div style="float: right; clear: both;">
+                                <div style="display: inline-block;">
+                                    <button class="btn btn-primary" onclick="location.href = '/creditnote/{{ $creditNote->id }}/edit';">Edit</button>
+                                </div>
+                                <div style="display: inline-block;">
+                                    <form method="POST" action="/creditnote/{{ $creditNote->id }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-danger" type="submit">Delete</button>
+                                    </form>
+                                </div>
+                            </div>
                             <script>
                                 var line = 0;
                                 var line2 = 0;
@@ -113,7 +125,7 @@
                                 var amounts = new Array();
                                 function getInvoice()
                                 {
-                                  var invoice_number = document.getElementById('invoice_number').value;
+                                  var invoice_id = document.getElementById('invoice_id').value;
                                   let _token = $('meta[name="csrf-token"]').attr('content');
                                   $.ajaxSetup({
                                     headers: {
@@ -123,7 +135,7 @@
                                   $.ajax({
                                     type:'POST',
                                     url:'/creditnote/getinvoice',
-                                    data: {_token: _token, invoice_number: invoice_number},
+                                    data: {_token: _token, invoice_id: invoice_id},
                                     dataType: 'json',
                                     success:function(data) {
                                       invoice = data.invoice;
@@ -181,7 +193,6 @@
                                 }
                                 function displayInvoice()
                                 {
-                                    document.getElementById('invoice_id').value = invoice['id'];
                                     document.getElementById('customer_id0').value = customername;
                                     document.getElementById('customer_id0-hidden').value = customername;
                                     document.getElementById('name-customer_id0-hidden').value = customername;
@@ -209,13 +220,10 @@
                                         hiddenInput = document.getElementById(input.getAttribute('id') + '-hidden'),
                                         hiddenInputName = document.getElementById('name-' + input.getAttribute('id') + '-hidden'),
                                         label = input.value;
-
                                     hiddenInputName.value = label;
                                     hiddenInput.value = label;
-
                                     for(var i = 0; i < options.length; i++) {
                                         var option = options[i];
-
                                         if(option.innerText === label) {
                                             hiddenInput.value = option.getAttribute('data-value');
                                             break;
@@ -223,23 +231,18 @@
                                     }
                                 }
                                 function addItemLines(a, b, c, d, e, f) {
-
                                     var tr = document.createElement("tr");
                                     tr.setAttribute("class", "invoice-lines");
                                     var table = document.getElementById("item_lines");
                                     table.appendChild(tr);
-
                                     var td0 = document.createElement("td");
                                     tr.appendChild(td0);
-
                                     var check = document.createElement("input");
                                     check.setAttribute("type", "checkbox");
                                     check.setAttribute("class", "deleteBox2");
                                     td0.appendChild(check);
-
                                     var td1 = document.createElement("td");
                                     tr.appendChild(td1);
-
                                     var productInput = document.createElement("input");
                                     productInput.setAttribute("list", "product_ids");
                                     productInput.setAttribute("id", "item_lines['product_id'][]" + line2);
@@ -250,24 +253,20 @@
                                     productInput.setAttribute("readonly", "readonly");
                                     productInput.setAttribute("value", f);
                                     td1.appendChild(productInput);
-
                                     var productHidden = document.createElement("input");
                                     productHidden.setAttribute("type", "hidden");
                                     productHidden.setAttribute("name", "item_lines['product_id'][]");
                                     productHidden.setAttribute("id", "item_lines['product_id'][]" + line2 + "-hidden");
                                     productHidden.setAttribute("value", a);
                                     td1.appendChild(productHidden);
-
                                     var productHidden2 = document.createElement("input");
                                     productHidden2.setAttribute("type", "hidden");
                                     productHidden2.setAttribute("name", "item_lines['product_name'][]");
                                     productHidden2.setAttribute("id", "name-item_lines['product_id'][]" + line2 + "-hidden");
                                     productHidden2.setAttribute("value", f);
                                     td1.appendChild(productHidden2);
-
                                     var td2 = document.createElement("td");
                                     tr.appendChild(td2);
-
                                     var descriptionInput = document.createElement("input");
                                     descriptionInput.setAttribute("type", "text");
                                     descriptionInput.setAttribute("class", "form-control");
@@ -278,10 +277,8 @@
                                     descriptionInput.setAttribute("readonly", "readonly");
                                     descriptionInput.setAttribute("value", b);
                                     td2.appendChild(descriptionInput);
-
                                     var td3 = document.createElement("td");
                                     tr.appendChild(td3);
-
                                     var quantityInput = document.createElement("input");
                                     quantityInput.setAttribute("type", "number");
                                     quantityInput.setAttribute("class", "form-control");
@@ -292,10 +289,8 @@
                                     quantityInput.setAttribute("value", c);
                                     quantityInput.setAttribute("oninput", "getAmounts(this)");
                                     td3.appendChild(quantityInput);
-
                                     var td4 = document.createElement("td");
                                     tr.appendChild(td4);
-
                                     var amountInput = document.createElement("input");
                                     amountInput.setAttribute("type", "number");
                                     amountInput.setAttribute("class", "form-control amount");
@@ -306,10 +301,8 @@
                                     amountInput.setAttribute("value", d);
                                     amountInput.setAttribute("oninput", "updateSubtotal()");
                                     td4.appendChild(amountInput);
-
                                     var td5 = document.createElement("td");
                                     tr.appendChild(td5);
-
                                     var inputTaxInput = document.createElement("input");
                                     inputTaxInput.setAttribute("type", "number");
                                     inputTaxInput.setAttribute("class", "form-control tax");
@@ -320,7 +313,6 @@
                                     inputTaxInput.setAttribute("value", e);
                                     inputTaxInput.setAttribute("oninput", "updateTotalTax()");
                                     td5.appendChild(inputTaxInput);
-
                                     line2++;
                                 }
                                 function myFunction() {
@@ -432,6 +424,28 @@
                                     updateSubtotal();
                                     updateTotalTax();
                                     updateTotal();
+                                @else
+                                    @if (!empty($creditNote->lines))
+                                        @foreach ($creditNote->lines as $line)
+                                            var line = <?php echo json_encode($line); ?>;
+                                            var a = line['product_id'];
+                                            var b = line['description'];
+                                            var c = line['quantity'];
+                                            var d = line['amount'];
+                                            var e = line['output_tax'];
+                                            var f = <?php echo json_encode(\App\Product::where('id', $line->product_id)->firstOrFail()->name); ?>;
+                                            if(a == null) {a = "";}
+                                            if(b == null) {b = "";}
+                                            if(c == null) {c = "";}
+                                            if(d == null) {d = "";}
+                                            if(e == null) {e = "";}
+                                            if(f == null) {f = "";}
+                                            addItemLines(a, b, c, d, e, f);
+                                        @endforeach
+                                        updateSubtotal();
+                                        updateTotalTax();
+                                        updateTotal();
+                                    @endif
                                 @endif
                             </script>
                         </div>

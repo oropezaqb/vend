@@ -44,7 +44,7 @@ class StoreCreditNote extends FormRequest
     public function rules()
     {
         return [
-            'invoice_id' => ['required', 'exists:App\Invoice,invoice_number'],
+            'invoice_id' => ['required', 'exists:App\Invoice,id'],
             'date' => ['required', 'date'],
             'number' => ['required', 'numeric', 'min:1'],
             "item_lines.'product_id'.*" => [

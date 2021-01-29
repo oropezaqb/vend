@@ -15,17 +15,13 @@ class CreditNote extends Model
     {
         return $this->hasMany(CreditNoteLine::class);
     }
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class, 'customer_id');
-    }
     public function journalEntry()
     {
         return $this->morphOne('App\JournalEntry', 'journalizable');
     }
     public function invoice()
     {
-        return $this->belongsTo(Invoice::class, 'invoice_id');
+        return $this->belongsTo(Invoice::class);
     }
     public function delete()
     {

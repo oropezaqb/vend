@@ -44,8 +44,9 @@ class CreditNoteController extends Controller
         }
         return view('creditnote.index', compact('creditNotes'));
     }
-    public function show(CreditNote $creditNote)
+    public function show(CreditNote $creditnote)
     {
+        $creditNote = $creditnote;
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
@@ -78,12 +79,12 @@ class CreditNoteController extends Controller
                 $creditNote->save();
                 $createCreditNote = new CreateCreditNote();
                 $createCreditNote->updateLines($creditNote);
-                $createCreditNote->recordJournalEntry($creditNote);
-                $createCreditNote->recordPurchases($creditNote);
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
-                    ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
-                $createInvoice = new CreateInvoice();
-                $createInvoice->updateSales($salesForUpdate);
+                //$createCreditNote->recordJournalEntry($creditNote);
+                //$createCreditNote->recordPurchases($creditNote);
+                //$salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
+                //    ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
+                //$createInvoice = new CreateInvoice();
+                //$createInvoice->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.index'));
         } catch (\Exception $e) {
@@ -154,18 +155,19 @@ class CreditNoteController extends Controller
             return back()->with('status', $this->translateError($e))->withInput();
         }
     }
-    public function destroy(CreditNote $creditNote)
+    public function destroy(CreditNote $creditnote)
     {
+        $creditNote = $creditnote;
         try {
             \DB::transaction(function () use ($creditNote) {
                 $company = \Auth::user()->currentCompany->company;
                 $creditNoteDate = $creditNote->date;
                 $creditNote->delete();
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
-                    ->where('type', 'sale')
-                    ->where('date', '>=', $creditNoteDate)->orderBy('date', 'asc')->get();
-                $createCreditNote = new CreateCreditNote();
-                $createCreditNote->updateSales($salesForUpdate);
+                //$salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                //    ->where('type', 'sale')
+                //    ->where('date', '>=', $creditNoteDate)->orderBy('date', 'asc')->get();
+                //$createCreditNote = new CreateCreditNote();
+                //$createCreditNote->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.index'));
         } catch (\Exception $e) {
@@ -174,8 +176,9 @@ class CreditNoteController extends Controller
     }
     public function getInvoice(Request $request)
     {
-        $id = $request->input('invoice_id');
-        $invoice = Invoice::where('invoice_number', $id)->first();
+        $company = \Auth::user()->currentCompany->company;
+        $id = $request->input('invoice_number');
+        $invoice = Invoice::where('company_id', $company->id)->where('invoice_number', $id)->first();
         if (is_null($invoice)) {
             return response()->json(array('invoice' => null, 'customername' => null,
                 'invoicelines' => null, 'productnames' => null), 200);

@@ -17,7 +17,7 @@ class Invoice extends Model
     }
     public function customer()
     {
-        return $this->belongsTo(Customer::class, 'customer_id');
+        return $this->belongsTo(Customer::class);
     }
     public function sales()
     {
@@ -30,6 +30,10 @@ class Invoice extends Model
     public function transaction()
     {
         return $this->morphOne('App\Transaction', 'transactable');
+    }
+    public function creditNotes()
+    {
+        return $this->hasMany(CreditNote::class);
     }
     public function delete()
     {
