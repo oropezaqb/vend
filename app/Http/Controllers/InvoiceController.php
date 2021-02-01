@@ -147,7 +147,7 @@ class InvoiceController extends Controller
                 }
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('type', 'sale')
                     ->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
-                $invoice->journalEntry()->delete();
+                $invoice->journalEntry->delete();
                 $createInvoice = new CreateInvoice();
                 $createInvoice->deleteInvoiceDetails($invoice);
                 $createInvoice->updateLines($invoice);

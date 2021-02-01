@@ -264,29 +264,36 @@ class CreateCreditNote
         foreach ($salesForUpdate as $saleForUpdate) {
             $transactions = Transaction::all();
             $transaction = $transactions->find($saleForUpdate->id);
-            $invoice = $transaction->transactable;
-            if (is_object($invoice->journalEntry)) {
-                foreach ($invoice->journalEntry->postings as $posting) {
-                    $posting->delete();
-                }
-                $invoice->journalEntry->delete();
-            }
             if ($transaction->type == 'sale') {
-	            if (is_object($invoice->sales)) {
-	                $sales = $invoice->sales;
-	                foreach ($sales as $sale) {
-	                    $sale->delete();
-	                }
+                $invoice = $transaction->transactable;
+                if (is_object($invoice->journalEntry)) {
+                    foreach ($invoice->journalEntry->postings as $posting) {
+                        $posting->delete();
+                    }
+                    $invoice->journalEntry->delete();
+                }
+	        if (is_object($invoice->sales)) {
+                    $sales = $invoice->sales;
+	            foreach ($sales as $sale) {
+	                $sale->delete();
 	            }
 	        }
-	        if ($transaction->type == 'sales_return') {
-	            if (is_object($invoice->sales_returns)) {
-	                $sales = $invoice->sales_returns;
-	                foreach ($sales as $sale) {
-	                    $sale->delete();
-	                }
+            }
+	    if ($transaction->type == 'sales_return') {
+                $creditNote = $transaction->transactable;
+                if (is_object($creditNote->journalEntry)) {
+                    foreach ($creditNote->journalEntry->postings as $posting) {
+                        $posting->delete();
+                    }
+                    $creditNote->journalEntry->delete();
+                }
+	        if (is_object($creditNote->salesReturns)) {
+	            $sales = $creditNote->salesReturns;
+                    foreach ($sales as $sale) {
+                        $sale->delete();
 	            }
-	        }
+                }
+            }
         }
         foreach ($salesForUpdate as $saleForUpdate) {
             $transactions = Transaction::all();
@@ -355,7 +362,8 @@ class CreateCreditNote
     }
     public function deleteCreditNote($creditNote)
     {
-        $creditNote->transaction->delete;
+        $creditNote->journalEntry->delete();
+        $creditNote->transaction->delete();
         foreach ($creditNote->lines as $line) {
             $line->delete();
         }

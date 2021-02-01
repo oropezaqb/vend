@@ -126,7 +126,7 @@ class CreditNoteController extends Controller
     }
     public function update(StoreCreditNote $request, CreditNote $creditnote)
     {
-        try {
+        //try {
             \DB::transaction(function () use ($request, $creditnote) {
                 $creditNote = $creditnote;
                 $company = \Auth::user()->currentCompany->company;
@@ -144,33 +144,34 @@ class CreditNoteController extends Controller
                 {
                     $changeDate = $oldDate;
                 }
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
-                $creditNote->journalEntry()->delete();
                 $createCreditNote = new CreateCreditNote();
                 $createCreditNote->deleteCreditNote($creditNote);
                 $createCreditNote->recordTransaction($creditNote);
                 $createCreditNote->updateLines($creditNote);
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
                 $createCreditNote->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.show', [$creditnote]))
                 ->with('status', 'Credit note updated!');
-        } catch (\Exception $e) {
-            return back()->with('status', $this->translateError($e))->withInput();
-        }
+        //} catch (\Exception $e) {
+        //    return back()->with('status', $this->translateError($e))->withInput();
+        //}
     }
     public function destroy(CreditNote $creditnote)
     {
         $creditNote = $creditnote;
         try {
             \DB::transaction(function () use ($creditNote) {
-                //$company = \Auth::user()->currentCompany->company;
-                //$creditNoteDate = $creditNote->date;
+                $company = \Auth::user()->currentCompany->company;
+                $creditNoteDate = $creditNote->date;
+                foreach ($creditNote->purchases as $purchase) {
+                    $purchase->delete();
+                }
                 $creditNote->delete();
-                //$salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
-                //    ->where('type', 'sale')
-                //    ->where('date', '>=', $creditNoteDate)->orderBy('date', 'asc')->get();
-                //$createCreditNote = new CreateCreditNote();
-                //$createCreditNote->updateSales($salesForUpdate);
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('date', '>=', $creditNoteDate)->orderBy('date', 'asc')->get();
+                $createCreditNote = new CreateCreditNote();
+                $createCreditNote->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.index'));
         } catch (\Exception $e) {
