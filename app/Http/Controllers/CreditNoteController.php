@@ -126,7 +126,6 @@ class CreditNoteController extends Controller
     }
     public function update(StoreCreditNote $request, CreditNote $creditnote)
     {
-dd($request);
         try {
             \DB::transaction(function () use ($request, $creditnote) {
                 $creditNote = $creditnote;
