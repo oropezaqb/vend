@@ -54,6 +54,28 @@ class CreateCreditNotesTable extends Migration
                 ->references('id')
                 ->on('products');
         });
+        Schema::create('sales_returns', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('company_id');
+            $table->unsignedBigInteger('sale_id');
+            $table->date('date');
+            $table->unsignedBigInteger('product_id');
+            $table->float('quantity', 8, 2)->nullable();
+            $table->decimal('amount', 13, 2);
+            $table->timestamps();
+            $table->foreign('company_id')
+                ->references('id')
+                ->on('companies')
+                ->onDelete('cascade');
+            $table->foreign('product_id')
+                ->references('id')
+                ->on('products');
+            $table->foreign('sale_id')
+                ->references('id')
+                ->on('sales')
+                ->onDelete('cascade');
+            $table->morphs('returnable_sale');
+        });
     }
 
     /**
