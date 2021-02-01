@@ -125,10 +125,15 @@ class StoreCreditNote extends FormRequest
             $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
         }
         $createCreditNote = new CreateCreditNote();
+        $creditNoteId = null;
+        if (!is_null(request('credit_note_id'))) {
+            $creditNoteId = request('credit_note_id');
+        }
         $itemAmounts = $createCreditNote->determineAmounts(
             request("invoice_id"),
             request("item_lines.'product_id'.".$row),
-            request("item_lines.'quantity'.".$row)
+            request("item_lines.'quantity'.".$row),
+            $creditNoteId
         );
         if (is_null(request("item_lines.'amount'.".$row))) {
             if (!is_null(request("item_lines.'quantity'.".$row))) {
@@ -165,10 +170,15 @@ class StoreCreditNote extends FormRequest
             $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
         }
         $createCreditNote = new CreateCreditNote();
+        $creditNoteId = null;
+        if (!is_null(request('credit_note_id'))) {
+            $creditNoteId = request('credit_note_id');
+        }
         $itemAmounts = $createCreditNote->determineAmounts(
             request("invoice_id"),
             request("item_lines.'product_id'.".$row),
-            request("item_lines.'quantity'.".$row)
+            request("item_lines.'quantity'.".$row),
+            $creditNoteId
         );
         $maxTax = ( $itemAmounts['tax_unreturned'] / $itemAmounts['amount_unreturned'] )
             * request("item_lines.'amount'.".$row);
@@ -206,10 +216,15 @@ class StoreCreditNote extends FormRequest
                 $product = Product::where('id', request("item_lines.'product_id'.".$row))->firstOrFail();
                 if ($product->track_quantity) {
                     $createCreditNote = new CreateCreditNote();
+                    $creditNoteId = null;
+                    if (!is_null(request('credit_note_id'))) {
+                        $creditNoteId = request('credit_note_id');
+                    }
                     $itemAmounts = $createCreditNote->determineAmounts(
                         request("invoice_id"),
                         request("item_lines.'product_id'.".$row),
-                        request("item_lines.'quantity'.".$row)
+                        request("item_lines.'quantity'.".$row),
+                        $creditNoteId
                     );
                     if ($productQuantity[request("item_lines.'product_id'.".$row)]
                         > $itemAmounts['quantity_unreturned']) {

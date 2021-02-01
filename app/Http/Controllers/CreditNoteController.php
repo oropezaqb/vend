@@ -113,8 +113,9 @@ class CreditNoteController extends Controller
         return $e->getMessage();
     }
 
-    public function edit(CreditNote $creditNote)
+    public function edit(CreditNote $creditnote)
     {
+        $creditNote = $creditnote;
         $company = \Auth::user()->currentCompany->company;
         $customers = Customer::where('company_id', $company->id)->latest()->get();
         $products = Product::where('company_id', $company->id)->latest()->get();
@@ -123,33 +124,36 @@ class CreditNoteController extends Controller
             compact('creditNote', 'customers', 'products')
         );
     }
-    public function update(StoreCreditNote $request, CreditNote $creditNote)
+    public function update(StoreCreditNote $request, CreditNote $creditnote)
     {
+dd($request);
         try {
-            \DB::transaction(function () use ($request, $creditNote) {
+            \DB::transaction(function () use ($request, $creditnote) {
+                $creditNote = $creditnote;
                 $company = \Auth::user()->currentCompany->company;
                 $oldDate = $creditNote->date;
                 $newDate = request('date');
                 $creditNote->update([
                     'company_id' => $company->id,
-                    'customer_id' => request('customer_id'),
+                    'invoice_id' => request('invoice_id'),
                     'date' => request('date'),
                     'number' => request('number'),
                 ]);
                 $creditNote->save();
                 $changeDate = $newDate;
-                if ($oldDate < $newDate) {
+                if ($oldDate < $newDate)
+                {
                     $changeDate = $oldDate;
                 }
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
-                    ->where('type', 'sale')->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
                 $creditNote->journalEntry()->delete();
                 $createCreditNote = new CreateCreditNote();
                 $createCreditNote->deleteCreditNote($creditNote);
+                $createCreditNote->recordTransaction($creditNote);
                 $createCreditNote->updateLines($creditNote);
                 $createCreditNote->updateSales($salesForUpdate);
             });
-            return redirect(route('creditnote.edit', [$creditNote]))
+            return redirect(route('creditnote.show', [$creditnote]))
                 ->with('status', 'Credit note updated!');
         } catch (\Exception $e) {
             return back()->with('status', $this->translateError($e))->withInput();
@@ -196,8 +200,9 @@ class CreditNoteController extends Controller
         $invoiceId = $request->input('invoice_id');
         $productId = $request->input('invoice_line_id');
         $quantity = $request->input('quantity_returned');
+        $creditNoteId = $request->input('credit_note_id');
         $createCreditNote = new CreateCreditNote();
-        $amounts = $createCreditNote->determineAmounts($invoiceId, $productId, $quantity);
+        $amounts = $createCreditNote->determineAmounts($invoiceId, $productId, $quantity, $creditNoteId);
         if (is_null($amounts)) {
             return response()->json(array('amounts' => null), 200);
         }

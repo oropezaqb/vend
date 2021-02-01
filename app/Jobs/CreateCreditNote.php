@@ -16,10 +16,11 @@ use App\CreditNoteLine;
 use App\InvoiceItemLine;
 use App\SalesReturn;
 use App\Invoice;
+use App\CreditNote;
 
 class CreateCreditNote
 {
-    public function determineAmounts($invoiceId, $invoiceLineId, $quantity)
+    public function determineAmounts($invoiceId, $invoiceLineId, $quantity, $creditNoteId)
     {
         $invoiceLine = Product::find($invoiceLineId);
         $quantitySold = InvoiceItemLine::where('invoice_id', $invoiceId)
@@ -28,15 +29,33 @@ class CreateCreditNote
             ->where('product_id', $invoiceLine->id)->sum('amount');
         $taxSold = InvoiceItemLine::where('invoice_id', $invoiceId)
             ->where('product_id', $invoiceLine->id)->sum('output_tax');
+        $qtyReturnForThisCN = 0;
+        if (!is_null($creditNoteId)) {
+            $qtyReturnForThisCN = CreditNoteLine::where('credit_note_id', $creditNoteId)
+                ->where('invoice_id', $invoiceId)
+                ->where('product_id', $invoiceLine->id)->sum('quantity');
+        }
         $quantityReturned = CreditNoteLine::where('invoice_id', $invoiceId)
             ->where('product_id', $invoiceLine->id)->sum('quantity');
+        $amtReturnForThisCN = 0;
+        if (!is_null($creditNoteId)) {
+            $amtReturnForThisCN = CreditNoteLine::where('credit_note_id', $creditNoteId)
+                ->where('invoice_id', $invoiceId)
+                ->where('product_id', $invoiceLine->id)->sum('amount');
+        }
         $amountReturned = CreditNoteLine::where('invoice_id', $invoiceId)
             ->where('product_id', $invoiceLine->id)->sum('amount');
+        $taxReturnForThisCN = 0;
+        if (!is_null($creditNoteId)) {
+            $taxReturnForThisCN = CreditNoteLine::where('credit_note_id', $creditNoteId)
+                ->where('invoice_id', $invoiceId)
+                ->where('product_id', $invoiceLine->id)->sum('output_tax');
+        }
         $taxReturned = CreditNoteLine::where('invoice_id', $invoiceId)
             ->where('product_id', $invoiceLine->id)->sum('output_tax');
-        $quantityUnreturned = $quantitySold - $quantityReturned;
-        $amountUnreturned = $amountSold - $amountReturned;
-        $taxUnreturned = $taxSold - $taxReturned;
+        $quantityUnreturned = $quantitySold - ($quantityReturned - $qtyReturnForThisCN);
+        $amountUnreturned = $amountSold - ($amountReturned - $amtReturnForThisCN);
+        $taxUnreturned = $taxSold - ($taxReturned - $taxReturnForThisCN);
         $amounts = array();
         $amounts['amount'] = 0;
         $amounts['tax'] = 0;
@@ -334,13 +353,17 @@ class CreateCreditNote
             }
         }
     }
-    public function deleteInvoiceDetails($invoice)
+    public function deleteCreditNote($creditNote)
     {
-        foreach ($invoice->lines as $line) {
+        $creditNote->transaction->delete;
+        foreach ($creditNote->lines as $line) {
             $line->delete();
         }
-        foreach ($invoice->salesReturns as $salesReturn) {
+        foreach ($creditNote->salesReturns as $salesReturn) {
             $salesReturn->delete();
+        }
+        foreach ($creditNote->purchases as $purchase) {
+            $purchase->delete();
         }
     }
 }
