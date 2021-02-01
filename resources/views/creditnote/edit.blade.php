@@ -184,6 +184,7 @@
                                 }
                                 function displayInvoice()
                                 {
+                                    document.getElementById('invoice_id').value = invoice['id'];
                                     document.getElementById('customer_id0').value = customername;
                                     document.getElementById('customer_id0-hidden').value = customername;
                                     document.getElementById('name-customer_id0-hidden').value = customername;
