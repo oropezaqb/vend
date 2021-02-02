@@ -40,7 +40,9 @@ abstract class DuskTestCase extends BaseTestCase
             DesiredCapabilities::chrome()->setCapability(
                 ChromeOptions::CAPABILITY,
                 $options
-            ), 90000, 90000
+            ),
+            90000,
+            90000
         );
     }
 }
