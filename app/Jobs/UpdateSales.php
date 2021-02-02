@@ -25,12 +25,11 @@ class UpdateSales
         foreach ($salesForUpdate as $saleForUpdate) {
             $transactions = Transaction::all();
             $transaction = $transactions->find($saleForUpdate->id);
-            if ($transaction->type == 'sale') {
-                $this->deleteSales($transaction);
+            $invoice = $transaction->transactable;
+            if (is_object($invoice->journalEntry)) {
+                $invoice->journalEntry->delete();
             }
-            if ($transaction->type == 'sales_return') {
-                $this->deleteSales($transaction);
-            }
+            $this->deleteSales($transaction, $invoice);
         }
         foreach ($salesForUpdate as $saleForUpdate) {
             $transactions = Transaction::all();
@@ -77,19 +76,28 @@ class UpdateSales
             }
         }
     }
-    public function deleteSales($transaction)
+    public function deleteSales($transaction, $invoice)
     {
-        $invoice = $transaction->transactable;
-        if (is_object($invoice->journalEntry)) {
-            foreach ($invoice->journalEntry->postings as $posting) {
-                $posting->delete();
+        if ($transaction->type == 'sale') {
+            if (is_object($invoice->sales)) {
+                $sales = $invoice->sales;
+                foreach ($sales as $sale) {
+                    $sale->delete();
+                }
             }
-            $invoice->journalEntry->delete();
         }
-        if (is_object($invoice->sales)) {
-            $sales = $invoice->sales;
-            foreach ($sales as $sale) {
-                $sale->delete();
+        if ($transaction->type == 'sales_return') {
+            if (is_object($invoice->salesReturns)) {
+                $salesReturns = $invoice->salesReturns;
+                foreach ($salesReturns as $salesReturn) {
+                    $salesReturn->delete();
+                }
+            }
+            if (is_object($invoice->purchases)) {
+                $purchases = $invoice->purchases;
+                foreach ($purchases as $purchase) {
+                    $purchase->delete();
+                }
             }
         }
     }

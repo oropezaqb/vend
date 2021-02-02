@@ -166,9 +166,6 @@ class CreditNoteController extends Controller
             \DB::transaction(function () use ($creditNote) {
                 $company = \Auth::user()->currentCompany->company;
                 $creditNoteDate = $creditNote->date;
-                foreach ($creditNote->purchases as $purchase) {
-                    $purchase->delete();
-                }
                 $creditNote->delete();
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
                     ->where('date', '>=', $creditNoteDate)->orderBy('date', 'asc')->get();

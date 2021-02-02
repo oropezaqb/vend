@@ -43,6 +43,10 @@ class CreditNote extends Model
             foreach ($relations as $relation) {
                 $relation->delete();
             }
+            $purchases = $this->purchases;
+            foreach ($purchases as $purchase) {
+                $purchase->delete();
+            }
             if (!is_null($this->journalEntry)) {
                 $this->journalEntry->delete();
             }
