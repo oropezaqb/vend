@@ -136,10 +136,7 @@ class StoreCreditNote extends FormRequest
             $creditNoteId
         );
         if (is_null(request("item_lines.'amount'.".$row))) {
-            if (!is_null(request("item_lines.'quantity'.".$row))) {
-                $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
-                    ': Amount required.');
-            }
+            $this->checkIfProvided($validator, request("item_lines.'quantity'.".$row), $row);
         } else {
             if (is_numeric(request("item_lines.'amount'.".$row))) {
                 if ($product->track_quantity) {
@@ -161,6 +158,13 @@ class StoreCreditNote extends FormRequest
                 $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
                     ': Amount must be a number.');
             }
+        }
+    }
+    public function checkIfProvided($validator, $fld, $row)
+    {
+        if (!is_null($fld)) {
+            $validator->errors()->add('item_lines', 'Item line ' . ($row + 1) .
+                ': Amount required.');
         }
     }
     public function validateItemTax($validator, $row, $productExists)

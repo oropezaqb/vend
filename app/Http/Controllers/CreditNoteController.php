@@ -13,6 +13,7 @@ use App\Http\Requests\StoreCreditNote;
 use App\Jobs\CreateCreditNote;
 use App\Invoice;
 use App\Jobs\CreateInvoice;
+use App\Jobs\UpdateSales;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -83,8 +84,8 @@ class CreditNoteController extends Controller
                 $createCreditNote->recordTransaction($creditNote);
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
                     ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
-                $createInvoice = new CreateCreditNote();
-                $createInvoice->updateSales($salesForUpdate);
+                $updateSales = new UpdateSales();
+                $updateSales->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.index'));
         } catch (\Exception $e) {
@@ -126,7 +127,7 @@ class CreditNoteController extends Controller
     }
     public function update(StoreCreditNote $request, CreditNote $creditnote)
     {
-        //try {
+        try {
             \DB::transaction(function () use ($request, $creditnote) {
                 $creditNote = $creditnote;
                 $company = \Auth::user()->currentCompany->company;
@@ -140,22 +141,23 @@ class CreditNoteController extends Controller
                 ]);
                 $creditNote->save();
                 $changeDate = $newDate;
-                if ($oldDate < $newDate)
-                {
+                if ($oldDate < $newDate) {
                     $changeDate = $oldDate;
                 }
                 $createCreditNote = new CreateCreditNote();
                 $createCreditNote->deleteCreditNote($creditNote);
                 $createCreditNote->recordTransaction($creditNote);
                 $createCreditNote->updateLines($creditNote);
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
-                $createCreditNote->updateSales($salesForUpdate);
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
+                $updateSales = new UpdateSales();
+                $updateSales->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.show', [$creditnote]))
                 ->with('status', 'Credit note updated!');
-        //} catch (\Exception $e) {
-        //    return back()->with('status', $this->translateError($e))->withInput();
-        //}
+        } catch (\Exception $e) {
+            return back()->with('status', $this->translateError($e))->withInput();
+        }
     }
     public function destroy(CreditNote $creditnote)
     {
@@ -170,42 +172,12 @@ class CreditNoteController extends Controller
                 $creditNote->delete();
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
                     ->where('date', '>=', $creditNoteDate)->orderBy('date', 'asc')->get();
-                $createCreditNote = new CreateCreditNote();
-                $createCreditNote->updateSales($salesForUpdate);
+                $updateSales = new UpdateSales();
+                $updateSales->updateSales($salesForUpdate);
             });
             return redirect(route('creditnote.index'));
         } catch (\Exception $e) {
             return back()->with('status', $this->translateError($e))->withInput();
         }
-    }
-    public function getInvoice(Request $request)
-    {
-        $company = \Auth::user()->currentCompany->company;
-        $id = $request->input('invoice_number');
-        $invoice = Invoice::where('company_id', $company->id)->where('invoice_number', $id)->first();
-        if (is_null($invoice)) {
-            return response()->json(array('invoice' => null, 'customername' => null,
-                'invoicelines' => null, 'productnames' => null), 200);
-        }
-        $customer = $invoice->customer;
-        $productNames = array();
-        foreach ($invoice->itemLines as $invoiceLine) {
-            $productNames[] = array($invoiceLine->product->name);
-        }
-        return response()->json(array('invoice'=> $invoice, 'customername' => $customer->name,
-            'invoicelines' => $invoice->itemLines, 'productnames' => $productNames), 200);
-    }
-    public function getAmounts(Request $request)
-    {
-        $invoiceId = $request->input('invoice_id');
-        $productId = $request->input('invoice_line_id');
-        $quantity = $request->input('quantity_returned');
-        $creditNoteId = $request->input('credit_note_id');
-        $createCreditNote = new CreateCreditNote();
-        $amounts = $createCreditNote->determineAmounts($invoiceId, $productId, $quantity, $creditNoteId);
-        if (is_null($amounts)) {
-            return response()->json(array('amounts' => null), 200);
-        }
-        return response()->json(array('amounts' => $amounts), 200);
     }
 }

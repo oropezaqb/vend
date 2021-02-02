@@ -30,8 +30,8 @@ Route::post('/suppliers/upload', 'SupplierController@upload')->name('suppliers.u
 Route::get('/products/import', 'ProductController@import')->name('products.import');
 Route::post('/products/upload', 'ProductController@upload')->name('products.upload');
 Route::post('/received_payments/ajax-request', 'AjaxController@store');
-Route::post('/creditnote/getinvoice', 'CreditNoteController@getInvoice');
-Route::post('/creditnote/getamounts', 'CreditNoteController@getAmounts');
+Route::post('/creditnote/getinvoice', 'AjaxCNController@getInvoice');
+Route::post('/creditnote/getamounts', 'AjaxCNController@getAmounts');
 
 Route::resources([
     'companies' => 'CompanyController',
