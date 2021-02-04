@@ -62,10 +62,10 @@
             <h6 class="collapse-header">Suppliers</h6>
             <a class="collapse-item" href="#">Expense</a>
             <a class="collapse-item" href="#">Cheque</a>
-            <a class="collapse-item" href="#">Bill</a>
+            <a class="collapse-item" href="/bills">Bill</a>
             <a class="collapse-item" href="#">Pay bills</a>
             <a class="collapse-item" href="#">Purchase order</a>
-            <a class="collapse-item" href="#">Supplier credit</a>
+            <a class="collapse-item" href="/suppliercredit">Supplier credit</a>
             <a class="collapse-item" href="#">Credit card credit</a>
             <h6 class="collapse-header">Employees</h6>
             <a class="collapse-item" href="#">Single time activity</a>

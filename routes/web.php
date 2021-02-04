@@ -32,6 +32,7 @@ Route::post('/products/upload', 'ProductController@upload')->name('products.uplo
 Route::post('/received_payments/ajax-request', 'AjaxController@store');
 Route::post('/creditnote/getinvoice', 'AjaxCNController@getInvoice');
 Route::post('/creditnote/getamounts', 'AjaxCNController@getAmounts');
+Route::post('/suppliercredit/getdocument', 'AjaxSCController@getDocument');
 
 Route::resources([
     'companies' => 'CompanyController',
@@ -55,6 +56,7 @@ Route::resources([
     'sales_receipts' => 'SalesReceiptController',
     'received_payments' => 'ReceivedPaymentController',
     'creditnote' => 'CreditNoteController',
+    'suppliercredit' => 'SupplierCreditController',
 ]);
 
 Route::resource('queries', 'QueryController');
