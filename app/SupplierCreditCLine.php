@@ -7,4 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class SupplierCreditCLine extends Model
 {
     protected $guarded = [];
+    protected $table = 'supplier_credit_clines';
 }

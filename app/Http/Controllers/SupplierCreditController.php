@@ -69,39 +69,41 @@ class SupplierCreditController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreSupplierCredit $request)
     {
-dd($request);
-        $company = \Auth::user()->currentCompany->company;
-        $purchasableDoc = $request->input('purchasable_doc');
-        $docNumber = $request->input('doc_number');
-        $document = null;
-        switch ($purchasableDoc) {
-            case 'Bill':
-                $document = Bill::where('company_id', $company->id)->where('bill_number', $docNumber)->first();
-                break;
-            case 'Cheque':
-                $document = Cheque::where('company_id', $company->id)->where('number', $docNumber)->first();
-                break;
-            default:
+        try {
+            \DB::transaction(function () use ($request) {
+                $company = \Auth::user()->currentCompany->company;
+                $purchasableDoc = $request->input('purchasable_doc');
+                $docId = $request->input('doc_id');
                 $document = null;
+                switch ($purchasableDoc) {
+                    case 'Bill':
+                        $document = Bill::where('company_id', $company->id)->where('id', $docId)->first();
+                        break;
+                    case 'Cheque':
+                        $document = Cheque::where('company_id', $company->id)->where('id', $docId)->first();
+                        break;
+                    default:
+                        $document = null;
+                }
+                $supplierCredit = new SupplierCredit([
+                    'company_id' => $company->id,
+                    'date' => request('date'),
+                    'number' => request('number'),
+                ]);
+                $document->supplierCredits()->save($supplierCredit);
+                $createSupplierCredit = new CreateSupplierCredit();
+                $createSupplierCredit->updateLines($supplierCredit);
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
+                $updateSales = new UpdateSales();
+                $updateSales->updateSales($salesForUpdate);
+            });
+            return redirect(route('suppliercredit.index'));
+        } catch (\Exception $e) {
+            return back()->with('status', $this->translateError($e))->withInput();
         }
-        if (is_null($document)) {
-            return response()->json(array('document' => null, 'suppliername' => null,
-                'clines' => null, 'ilines' => null, 'accounttitles' => null,
-                'productnames' => null), 200);
-        }
-        $supplier = $document->supplier;
-        $accountTitles = array();
-        foreach ($document->categoryLines as $documentCLine) {
-            $accountTitles[] = array($documentCLine->account->title);
-        }
-        $productNames = array();
-        foreach ($document->itemLines as $documentILine) {
-            $productNames[] = array($documentILine->product->name);
-        }
-        return response()->json(array('document'=> $document, 'suppliername' => $supplier->name,
-            'clines' => $document->categoryLines, 'ilines' => $document->itemLines, 'accounttitles' => $accountTitles, 'productnames' => $productNames), 200);
     }
 
     /**

@@ -16,22 +16,20 @@ class CreateSupplierCreditsTable extends Migration
         Schema::create('supplier_credits', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id');
-            $table->unsignedBigInteger('supplier_id');
+            $table->morphs('purchasable');
             $table->date('date');
             $table->unsignedBigInteger('number');
-            $table->unique(['company_id', 'supplier_id', 'number'], 'my_unique_ref');
+            $table->unique(['company_id', 'number'], 'my_unique_ref');
             $table->timestamps();
             $table->foreign('company_id')
                 ->references('id')
                 ->on('companies')
                 ->onDelete('cascade');
-            $table->foreign('supplier_id')
-                ->references('id')
-                ->on('suppliers');
         });
         Schema::create('supplier_credit_clines', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('supplier_credit_id');
+            $table->morphs('purchasable');
             $table->unsignedBigInteger('account_id');
             $table->text('description')->nullable();
             $table->decimal('amount', 13, 2);
@@ -48,6 +46,7 @@ class CreateSupplierCreditsTable extends Migration
         Schema::create('supplier_credit_ilines', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('supplier_credit_id');
+            $table->morphs('purchasable');
             $table->unsignedBigInteger('product_id');
             $table->text('description')->nullable();
             $table->float('quantity', 8, 2)->nullable();
@@ -89,9 +88,9 @@ class CreateSupplierCreditsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('supplier_credits');
         Schema::dropIfExists('supplier_credit_clines');
         Schema::dropIfExists('supplier_credit_ilines');
-        Schema::dropIfExists('purchase_returns');
+        Schema::dropIfExists('purc_returns');
+        Schema::dropIfExists('supplier_credits');
     }
 }

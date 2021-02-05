@@ -147,6 +147,8 @@
                                 </div>
                                 <br><br><br>
                                 <button class="btn btn-primary" type="submit" style="float: right; clear: both;">Save</button>
+                                <input type="hidden" name="product_id" id="product_id" value="">
+                                <input type="hidden" name="quantity_returned" id="quantity_returned" value="">
                             </form>
                             <script>
                                 var line = 0;
@@ -160,7 +162,7 @@
                                 var amounts = new Array();
                                 function getDocument()
                                 {
-                                  var purchasable_doc = document.getElementById('purchasable_doc').value;
+                                  var purchasable_doc = document.getElementById('purchasable_doc0-hidden').value;
                                   var doc_number = document.getElementById('doc_number').value;
                                   let _token = $('meta[name="csrf-token"]').attr('content');
                                   $.ajaxSetup({
@@ -174,13 +176,13 @@
                                     data: {_token: _token, purchasable_doc: purchasable_doc, doc_number: doc_number},
                                     dataType: 'json',
                                     success:function(data) {
-                                      document = data.document;
+                                      doc = data.document;
                                       suppliername = data.suppliername;
                                       clines = data.clines;
                                       ilines = data.ilines;
                                       accounttitles = data.accounttitles;
                                       productnames = data.productnames;
-                                      if (document === null) {
+                                      if (doc === null) {
                                           document.getElementById('supplier_id0').value = '';
                                           $(".clines").remove();
                                           $(".ilines").remove();
@@ -190,7 +192,6 @@
                                       else {
                                           $(".clines").remove();
                                           $(".ilines").remove();
-console.log(document, document['id']);
                                           displayDocument();
                                           updateSubtotal();
                                           updateTotalTax();
@@ -202,7 +203,7 @@ console.log(document, document['id']);
                                 }
                                 function displayDocument()
                                 {
-                                    document.getElementById('doc_id').value = document['id'];
+                                    document.getElementById('doc_id').value = doc['id'];
                                     document.getElementById('supplier_id0').value = suppliername;
                                     document.getElementById('name-supplier_id0-hidden').value = suppliername;
                                     for (index = 0; index < clines.length; ++index)
@@ -211,16 +212,57 @@ console.log(document, document['id']);
                                         let accounttitle = accounttitles[index];
                                         let description = clines[index]['description'];
                                         if(description == null) {description = "";}
-                                        addItemLines(accountid, description, null, null, null, accounttitle);
+                                        addCategoryLines(accountid, description, null, null, accounttitle);
                                     }
                                     for (index = 0; index < ilines.length; ++index)
                                     {
-                                        let productid = invoicelines[index]['product_id'];
+                                        let productid = ilines[index]['product_id'];
                                         let productname = productnames[index];
-                                        let description = invoicelines[index]['description'];
+                                        let description = ilines[index]['description'];
                                         if(description == null) {description = "";}
                                         addItemLines(productid, description, null, null, null, productname);
                                     }
+                                }
+                                function getAmounts(creditline)
+                                {
+                                  var purchasable_doc = document.getElementById('purchasable_doc0-hidden').value;
+                                  var doc_id = document.getElementById('doc_id').value;
+                                  var product_id = creditline.parentNode.parentNode.childNodes[1].childNodes[1].value;
+console.log(product_id);
+                                  document.getElementById('product_id').value = product_id;
+                                  var quantity_returned = creditline.value;
+                                  document.getElementById('quantity_returned').value = quantity_returned;
+                                  let _token = $('meta[name="csrf-token"]').attr('content');
+                                  $.ajaxSetup({
+                                    headers: {
+                                      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                    }
+                                  });
+                                  $.ajax({
+                                    type:'POST',
+                                    url:'/suppliercredit/getamounts',
+                                    data: {_token: _token, purchasable_doc: purchasable_doc, doc_id: doc_id, product_id: product_id, quantity_returned: quantity_returned},
+                                    dataType: 'json',
+                                    success:function(data) {
+                                      amounts = data.amounts;
+                                      if (amounts === null) {
+                                          creditline.parentNode.parentNode.childNodes[4].childNodes[0].value = '';
+                                          creditline.parentNode.parentNode.childNodes[5].childNodes[0].value = '';
+                                      }
+                                      else {
+                                          displayAmounts(creditline, amounts);
+                                      }
+                                    },
+                                    error: function(data){
+                                    }
+                                  });
+                                }
+                                function displayAmounts(creditline, amounts)
+                                {
+                                    creditline.parentNode.parentNode.childNodes[4].childNodes[0].value = amounts["amount"];
+                                    creditline.parentNode.parentNode.childNodes[5].childNodes[0].value = amounts["tax"];
+                                    updateSubtotal();
+                                    updateTotalTax();
                                 }
                                 function setValue (id)
                                 {
@@ -242,6 +284,7 @@ console.log(document, document['id']);
                                 }
                                 function addCategoryLines(a, b, c, d, e) {
                                     var tr = document.createElement("tr");
+                                    tr.setAttribute("class", "clines");
                                     var table = document.getElementById("category_lines");
                                     table.appendChild(tr);
                                     var td0 = document.createElement("td");
@@ -311,6 +354,7 @@ console.log(document, document['id']);
                                 }
                                 function addItemLines(a, b, c, d, e, f) {
                                     var tr = document.createElement("tr");
+                                    tr.setAttribute("class", "ilines");
                                     var table = document.getElementById("item_lines");
                                     table.appendChild(tr);
                                     var td0 = document.createElement("td");
@@ -362,6 +406,7 @@ console.log(document, document['id']);
                                     quantityInput.setAttribute("step", "0.001");
                                     quantityInput.setAttribute("style", "text-align: right;");
                                     quantityInput.setAttribute("value", c);
+                                    quantityInput.setAttribute("oninput", "getAmounts(this)");
                                     td3.appendChild(quantityInput);
                                     var td4 = document.createElement("td");
                                     tr.appendChild(td4);
