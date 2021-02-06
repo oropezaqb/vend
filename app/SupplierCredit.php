@@ -13,11 +13,11 @@ class SupplierCredit extends Model
     }
     public function clines()
     {
-        return $this->hasMany(CreditNoteCLine::class);
+        return $this->hasMany(SupplierCreditCLine::class);
     }
     public function ilines()
     {
-        return $this->hasMany(CreditNoteILine::class);
+        return $this->hasMany(SupplierCreditILine::class);
     }
     public function supplier()
     {

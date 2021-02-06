@@ -43,6 +43,10 @@ class Bill extends Model
     {
         return $this->morphMany('App\SupplierCreditILine', 'purchasable');
     }
+    public function purchaseReturns()
+    {
+        return $this->morphMany('App\PurchaseReturn', 'purchasable');
+    }
     public function delete()
     {
         $res = parent::delete();

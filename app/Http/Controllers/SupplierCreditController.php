@@ -95,6 +95,13 @@ class SupplierCreditController extends Controller
                 $document->supplierCredits()->save($supplierCredit);
                 $createSupplierCredit = new CreateSupplierCredit();
                 $createSupplierCredit->updateLines($supplierCredit, $document);
+                $createSupplierCredit->savePurchaseReturns($supplierCredit, $document);
+                $createSupplierCredit->updatePurchases($supplierCredit, $document);
+                $createSupplierCredit->recordJournalEntry($supplierCredit);
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
+                $updateSales = new UpdateSales();
+                $updateSales->updateSales($salesForUpdate);
             });
             return redirect(route('suppliercredit.index'));
         //} catch (\Exception $e) {
@@ -141,9 +148,17 @@ class SupplierCreditController extends Controller
      * @param  \App\SupplierCredit  $supplierCredit
      * @return \Illuminate\Http\Response
      */
-    public function edit(SupplierCredit $supplierCredit)
+    public function edit(SupplierCredit $suppliercredit)
     {
-        //
+        $supplierCredit = $suppliercredit;
+        $company = \Auth::user()->currentCompany->company;
+        $suppliers = Supplier::where('company_id', $company->id)->latest()->get();
+        $accounts = Account::where('company_id', $company->id)->latest()->get();
+        $products = Product::where('company_id', $company->id)->latest()->get();
+        return view(
+            'suppliercredit.edit',
+            compact('supplierCredit', 'suppliers', 'accounts', 'products')
+        );
     }
 
     /**
@@ -164,8 +179,28 @@ class SupplierCreditController extends Controller
      * @param  \App\SupplierCredit  $supplierCredit
      * @return \Illuminate\Http\Response
      */
-    public function destroy(SupplierCredit $supplierCredit)
+    public function destroy(SupplierCredit $suppliercredit)
     {
-        //
+        $supplierCredit = $suppliercredit;
+        //try {
+            \DB::transaction(function () use ($supplierCredit) {
+                $company = \Auth::user()->currentCompany->company;
+                $supplierCreditDate = $supplierCredit->date;
+                foreach ($supplierCredit->purchaseReturns as $purchaseReturn) {
+                    $purchaseReturn->delete();
+                }
+                $createSupplierCredit = new CreateSupplierCredit();
+                $createSupplierCredit->updatePurchases($supplierCredit, $supplierCredit->purchasable);
+                $supplierCredit->journalEntry->delete();
+                $supplierCredit->delete();
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('date', '>=', $supplierCreditDate)->orderBy('date', 'asc')->get();
+                $updateSales = new UpdateSales();
+                $updateSales->updateSales($salesForUpdate);
+            });
+            return redirect(route('suppliercredit.index'));
+        //} catch (\Exception $e) {
+        //    return back()->with('status', $this->translateError($e))->withInput();
+        //}
     }
 }
