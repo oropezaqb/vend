@@ -71,7 +71,7 @@ class SupplierCreditController extends Controller
      */
     public function store(StoreSupplierCredit $request)
     {
-        try {
+        //try {
             \DB::transaction(function () use ($request) {
                 $company = \Auth::user()->currentCompany->company;
                 $purchasableDoc = $request->input('purchasable_doc');
@@ -94,16 +94,34 @@ class SupplierCreditController extends Controller
                 ]);
                 $document->supplierCredits()->save($supplierCredit);
                 $createSupplierCredit = new CreateSupplierCredit();
-                $createSupplierCredit->updateLines($supplierCredit);
-                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
-                    ->where('date', '>=', request('date'))->orderBy('date', 'asc')->get();
-                $updateSales = new UpdateSales();
-                $updateSales->updateSales($salesForUpdate);
+                $createSupplierCredit->updateLines($supplierCredit, $document);
             });
             return redirect(route('suppliercredit.index'));
-        } catch (\Exception $e) {
-            return back()->with('status', $this->translateError($e))->withInput();
+        //} catch (\Exception $e) {
+        //    return back()->with('status', $this->translateError($e))->withInput();
+        //}
+    }
+
+    public function translateError($e)
+    {
+        switch ($e->getCode()) {
+            case '23000':
+                if (preg_match(
+                    "/for key '(.*)'/",
+                    $e->getMessage(),
+                    $m
+                )) {
+                    $indexes = array(
+                      'my_unique_ref' =>
+                    array ('Supplier credit is already recorded.', 'number'));
+                    if (isset($indexes[$m[1]])) {
+                        $this->err_flds = array($indexes[$m[1]][1] => 1);
+                        return $indexes[$m[1]][0];
+                    }
+                }
+                break;
         }
+        return $e->getMessage();
     }
 
     /**

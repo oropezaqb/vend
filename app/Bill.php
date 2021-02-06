@@ -31,6 +31,18 @@ class Bill extends Model
     {
         return $this->morphOne('App\JournalEntry', 'journalizable');
     }
+    public function supplierCredits()
+    {
+        return $this->morphMany('App\SupplierCredit', 'purchasable');
+    }
+    public function supplierCreditCLine()
+    {
+        return $this->morphMany('App\SupplierCreditCLine', 'purchasable');
+    }
+    public function supplierCreditILine()
+    {
+        return $this->morphMany('App\SupplierCreditILine', 'purchasable');
+    }
     public function delete()
     {
         $res = parent::delete();

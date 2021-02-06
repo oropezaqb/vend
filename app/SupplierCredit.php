@@ -31,6 +31,10 @@ class SupplierCredit extends Model
     {
         return $this->morphOne('App\JournalEntry', 'journalizable');
     }
+    public function purchasable()
+    {
+        return $this->morphTo();
+    }
     public function delete()
     {
         $res=parent::delete();
