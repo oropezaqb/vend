@@ -96,6 +96,7 @@ class SupplierCreditController extends Controller
                 $createSupplierCredit = new CreateSupplierCredit();
                 $createSupplierCredit->updateLines($supplierCredit, $document);
                 $createSupplierCredit->savePurchaseReturns($supplierCredit, $document);
+                $createSupplierCredit->deletePurchases($supplierCredit, $document);
                 $createSupplierCredit->updatePurchases($supplierCredit, $document);
                 $createSupplierCredit->recordJournalEntry($supplierCredit);
                 $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
@@ -168,9 +169,66 @@ class SupplierCreditController extends Controller
      * @param  \App\SupplierCredit  $supplierCredit
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, SupplierCredit $supplierCredit)
+    public function update(StoreSupplierCredit $request, SupplierCredit $suppliercredit)
     {
-        //
+        try {
+            \DB::transaction(function () use ($request, $suppliercredit) {
+                $supplierCredit = $suppliercredit;
+                $company = \Auth::user()->currentCompany->company;
+                $oldDocument = $supplierCredit->purchasable;
+                $oldDate = $supplierCredit->date;
+                $newDate = request('date');
+                $purchasableDoc = $request->input('purchasable_doc');
+                $docId = $request->input('doc_id');
+                $document = null;
+                switch ($purchasableDoc) {
+                    case 'Bill':
+                        $document = Bill::where('company_id', $company->id)->where('id', $docId)->first();
+                        break;
+                    case 'Cheque':
+                        $document = Cheque::where('company_id', $company->id)->where('id', $docId)->first();
+                        break;
+                    default:
+                        $document = null;
+                }
+                $supplierCredit->update([
+                    'company_id' => $company->id,
+                    'date' => request('date'),
+                    'number' => request('number'),
+                ]);
+                $document->supplierCredits()->save($supplierCredit);
+                $createSupplierCredit = new CreateSupplierCredit();
+                foreach ($supplierCredit->clines as $line) {
+                    $line->delete();
+                }
+                foreach ($supplierCredit->ilines as $line) {
+                    $line->delete();
+                }
+                $createSupplierCredit->updateLines($supplierCredit, $document);
+                $createSupplierCredit->deletePurchaseReturns($supplierCredit, $document);
+                $createSupplierCredit->savePurchaseReturns($supplierCredit, $document);
+                if (!($oldDocument === $document)) {
+                    $createSupplierCredit->deletePurchases($supplierCredit, $oldDocument);
+                    $createSupplierCredit->updatePurchases($supplierCredit, $oldDocument);
+                }
+                $createSupplierCredit->deletePurchases($supplierCredit, $document);
+                $createSupplierCredit->updatePurchases($supplierCredit, $document);
+                $supplierCredit->journalEntry->delete();
+                $createSupplierCredit->recordJournalEntry($supplierCredit);
+                $changeDate = $newDate;
+                if ($oldDate < $newDate) {
+                    $changeDate = $oldDate;
+                }
+                $salesForUpdate = \DB::table('transactions')->where('company_id', $company->id)
+                    ->where('date', '>=', $changeDate)->orderBy('date', 'asc')->get();
+                $updateSales = new UpdateSales();
+                $updateSales->updateSales($salesForUpdate);
+            });
+            return redirect(route('suppliercredit.edit', [$suppliercredit]))
+                ->with('status', 'Supplier credit updated!');
+        } catch (\Exception $e) {
+            return back()->with('status', $this->translateError($e))->withInput();
+        }
     }
 
     /**
@@ -190,6 +248,7 @@ class SupplierCreditController extends Controller
                     $purchaseReturn->delete();
                 }
                 $createSupplierCredit = new CreateSupplierCredit();
+                $createSupplierCredit->deletePurchases($supplierCredit, $supplierCredit->purchasable);
                 $createSupplierCredit->updatePurchases($supplierCredit, $supplierCredit->purchasable);
                 $supplierCredit->journalEntry->delete();
                 $supplierCredit->delete();

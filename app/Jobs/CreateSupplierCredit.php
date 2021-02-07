@@ -168,14 +168,17 @@ class CreateSupplierCredit
                 if (!is_null(request("category_lines.'input_tax'.".$row))) {
                     $inputTax = request("category_lines.'input_tax'.".$row);
                 }
-                $categoryLine = new SupplierCreditCLine([
-                    'supplier_credit_id' => $supplierCredit->id,
-                    'account_id' => request("category_lines.'account_id'.".$row),
-                    'description' => request("category_lines.'description'.".$row),
-                    'amount' => request("category_lines.'amount'.".$row),
-                    'input_tax' => $inputTax
-                ]);
-                $document->supplierCreditCLine()->save($categoryLine);
+                if (!is_null(request("category_lines.'amount'.".$row)) &&
+                    is_numeric(request("category_lines.'amount'.".$row))) {
+                    $categoryLine = new SupplierCreditCLine([
+                        'supplier_credit_id' => $supplierCredit->id,
+                        'account_id' => request("category_lines.'account_id'.".$row),
+                        'description' => request("category_lines.'description'.".$row),
+                        'amount' => request("category_lines.'amount'.".$row),
+                        'input_tax' => $inputTax
+                    ]);
+                    $document->supplierCreditCLine()->save($categoryLine);
+                }
             }
         }
         if (!is_null(request("item_lines.'product_id'"))) {
@@ -202,13 +205,21 @@ class CreateSupplierCredit
             }
         }
     }
+    public function deletePurchaseReturns($supplierCredit, $document)
+    {
+        foreach($supplierCredit->purchaseReturns as $purchaseReturn)
+        {
+            $purchaseReturn->delete();
+        }
+    }
     public function savePurchaseReturns($supplierCredit, $document)
     {
         $count = count(request("item_lines.'product_id'"), 1);
         if ($count > 0) {
             for ($row = 0; $row < $count; $row++) {
                 $product = Product::find(request("item_lines.'product_id'.".$row));
-                if ($product->track_quantity) {
+                if ($product->track_quantity && !is_null(request("item_lines.'amount'.".$row)) &&
+                    is_numeric(request("item_lines.'amount'.".$row))) {
                     $company = \Auth::user()->currentCompany->company;
                     $purchaseReturn = new PurchaseReturn([
                         'company_id' => $company->id,
@@ -224,12 +235,15 @@ class CreateSupplierCredit
             }
         }
     }
-    public function updatePurchases($supplierCredit, $document)
+    public function deletePurchases($supplierCredit, $document)
     {
         foreach($document->purchases as $purchase)
         {
             $purchase->delete();
         }
+    }
+    public function updatePurchases($supplierCredit, $document)
+    {
         if (!is_null($document->itemLines)) {
             foreach ($document->itemLines as $itemLine) {
                 $product = $itemLine->product;

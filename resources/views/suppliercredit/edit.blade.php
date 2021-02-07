@@ -150,6 +150,7 @@
                                 <button class="btn btn-primary" type="submit" style="float: right; clear: both;">Save</button>
                                 <input type="hidden" name="product_id" id="product_id" value="">
                                 <input type="hidden" name="quantity_returned" id="quantity_returned" value="">
+                                <input type="hidden" name="supplier_credit_id" id="supplier_credit_id" value="{!! $supplierCredit->id  !!}">
                             </form>
                             <script>
                                 var line = 0;
@@ -232,6 +233,7 @@
                                   document.getElementById('product_id').value = product_id;
                                   var quantity_returned = creditline.value;
                                   document.getElementById('quantity_returned').value = quantity_returned;
+                                  var supplier_credit_id = document.getElementById('supplier_credit_id').value;
                                   let _token = $('meta[name="csrf-token"]').attr('content');
                                   $.ajaxSetup({
                                     headers: {
@@ -241,7 +243,7 @@
                                   $.ajax({
                                     type:'POST',
                                     url:'/suppliercredit/getamounts',
-                                    data: {_token: _token, purchasable_doc: purchasable_doc, doc_id: doc_id, product_id: product_id, quantity_returned: quantity_returned},
+                                    data: {_token: _token, purchasable_doc: purchasable_doc, doc_id: doc_id, product_id: product_id, quantity_returned: quantity_returned, supplier_credit_id: supplier_credit_id},
                                     dataType: 'json',
                                     success:function(data) {
                                       amounts = data.amounts;
