@@ -13,13 +13,15 @@ use App\SupplierCreditCLine;
 use App\SupplierCreditILine;
 use App\Http\Requests\StoreSupplierCredit;
 use App\Jobs\CreateSupplierCredit;
-use App\Invoice;
-use App\Jobs\CreateInvoice;
 use App\Jobs\UpdateSales;
 use App\Bill;
+use App\Jobs\SaveSCLines;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
+     * @SuppressWarnings(PHPMD.ShortVariableName)
+     * @SuppressWarnings(PHPMD.UndefinedVariable)
+     * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
      */
 
 class SupplierCreditController extends Controller
@@ -93,8 +95,9 @@ class SupplierCreditController extends Controller
                     'number' => request('number'),
                 ]);
                 $document->supplierCredits()->save($supplierCredit);
+                $saveSCLines = new SaveSCLines();
+                $saveSCLines->updateLines($supplierCredit, $document);
                 $createSupplierCredit = new CreateSupplierCredit();
-                $createSupplierCredit->updateLines($supplierCredit, $document);
                 $createSupplierCredit->savePurchaseReturns($supplierCredit, $document);
                 $createSupplierCredit->deletePurchases($supplierCredit, $document);
                 $createSupplierCredit->updatePurchases($supplierCredit, $document);
@@ -138,9 +141,17 @@ class SupplierCreditController extends Controller
      * @param  \App\SupplierCredit  $supplierCredit
      * @return \Illuminate\Http\Response
      */
-    public function show(SupplierCredit $supplierCredit)
+    public function show(SupplierCredit $suppliercredit)
     {
-        //
+        $supplierCredit = $suppliercredit;
+        $company = \Auth::user()->currentCompany->company;
+        $suppliers = Supplier::where('company_id', $company->id)->latest()->get();
+        $accounts = Account::where('company_id', $company->id)->latest()->get();
+        $products = Product::where('company_id', $company->id)->latest()->get();
+        return view(
+            'suppliercredit.show',
+            compact('supplierCredit', 'suppliers', 'accounts', 'products')
+        );
     }
 
     /**
@@ -197,6 +208,7 @@ class SupplierCreditController extends Controller
                     'number' => request('number'),
                 ]);
                 $document->supplierCredits()->save($supplierCredit);
+                $saveSCLines = new SaveSCLines();
                 $createSupplierCredit = new CreateSupplierCredit();
                 foreach ($supplierCredit->clines as $line) {
                     $line->delete();
@@ -204,7 +216,7 @@ class SupplierCreditController extends Controller
                 foreach ($supplierCredit->ilines as $line) {
                     $line->delete();
                 }
-                $createSupplierCredit->updateLines($supplierCredit, $document);
+                $saveSCLines->updateLines($supplierCredit, $document);
                 $createSupplierCredit->deletePurchaseReturns($supplierCredit, $document);
                 $createSupplierCredit->savePurchaseReturns($supplierCredit, $document);
                 if (!($oldDocument === $document)) {

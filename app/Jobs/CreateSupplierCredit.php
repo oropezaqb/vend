@@ -23,6 +23,8 @@ use App\PurchaseReturn;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
      */
 
 class CreateSupplierCredit
@@ -35,11 +37,23 @@ class CreateSupplierCredit
         switch ($purchasableDoc) {
             case 'Bill':
                 $document = Bill::where('company_id', $company->id)->where('id', $docId)->first();
-                $amounts = $this->determineCBillAmounts($document, $purchasableDoc, $docId, $accountId, $supplierCreditId);
+                $amounts = $this->determineCBillAmounts(
+                    $document,
+                    $purchasableDoc,
+                    $docId,
+                    $accountId,
+                    $supplierCreditId
+                );
                 break;
             case 'Cheque':
                 $document = Cheque::where('company_id', $company->id)->where('id', $docId)->first();
-                $amounts = $this->determineCChequeAmounts($document, $purchasableDoc, $docId, $accountId, $supplierCreditId);
+                $amounts = $this->determineCChequeAmounts(
+                    $document,
+                    $purchasableDoc,
+                    $docId,
+                    $accountId,
+                    $supplierCreditId
+                );
                 break;
             default:
                 $document = null;
@@ -90,11 +104,25 @@ class CreateSupplierCredit
         switch ($purchasableDoc) {
             case 'Bill':
                 $document = Bill::where('company_id', $company->id)->where('id', $docId)->first();
-                $amounts = $this->determineBillAmounts($document, $purchasableDoc, $docId, $productId, $quantity, $supplierCreditId);
+                $amounts = $this->determineBillAmounts(
+                    $document,
+                    $purchasableDoc,
+                    $docId,
+                    $productId,
+                    $quantity,
+                    $supplierCreditId
+                );
                 break;
             case 'Cheque':
                 $document = Cheque::where('company_id', $company->id)->where('id', $docId)->first();
-                $amounts = $this->determineChequeAmounts($document, $purchasableDoc, $docId, $productId, $quantity, $supplierCreditId);
+                $amounts = $this->determineChequeAmounts(
+                    $document,
+                    $purchasableDoc,
+                    $docId,
+                    $productId,
+                    $quantity,
+                    $supplierCreditId
+                );
                 break;
             default:
                 $document = null;
@@ -159,56 +187,9 @@ class CreateSupplierCredit
         }
         return $amounts;
     }
-    public function updateLines($supplierCredit, $document)
-    {
-        if (!is_null(request("category_lines.'account_id'"))) {
-            $count = count(request("category_lines.'account_id'"));
-            for ($row = 0; $row < $count; $row++) {
-                $inputTax = 0;
-                if (!is_null(request("category_lines.'input_tax'.".$row))) {
-                    $inputTax = request("category_lines.'input_tax'.".$row);
-                }
-                if (!is_null(request("category_lines.'amount'.".$row)) &&
-                    is_numeric(request("category_lines.'amount'.".$row))) {
-                    $categoryLine = new SupplierCreditCLine([
-                        'supplier_credit_id' => $supplierCredit->id,
-                        'account_id' => request("category_lines.'account_id'.".$row),
-                        'description' => request("category_lines.'description'.".$row),
-                        'amount' => request("category_lines.'amount'.".$row),
-                        'input_tax' => $inputTax
-                    ]);
-                    $document->supplierCreditCLine()->save($categoryLine);
-                }
-            }
-        }
-        if (!is_null(request("item_lines.'product_id'"))) {
-            $count = count(request("item_lines.'product_id'"));
-            for ($row = 0; $row < $count; $row++) {
-                $inputTax = 0;
-                if (!is_null(request("item_lines.'input_tax'.".$row))) {
-                    $inputTax = request("item_lines.'input_tax'.".$row);
-                }
-                if (!is_null(request("item_lines.'amount'.".$row)) &&
-                    is_numeric(request("item_lines.'amount'.".$row))) {
-                    if (request("item_lines.'amount'.".$row) > 0) {
-                        $itemLine = new SupplierCreditILine([
-                            'supplier_credit_id' => $supplierCredit->id,
-                            'product_id' => request("item_lines.'product_id'.".$row),
-                            'description' => request("item_lines.'description'.".$row),
-                            'quantity' => request("item_lines.'quantity'.".$row),
-                            'amount' => request("item_lines.'amount'.".$row),
-                            'input_tax' => $inputTax
-                        ]);
-                        $document->supplierCreditILine()->save($itemLine);
-                    }
-                }
-            }
-        }
-    }
     public function deletePurchaseReturns($supplierCredit, $document)
     {
-        foreach($supplierCredit->purchaseReturns as $purchaseReturn)
-        {
+        foreach ($supplierCredit->purchaseReturns as $purchaseReturn) {
             $purchaseReturn->delete();
         }
     }
@@ -237,8 +218,7 @@ class CreateSupplierCredit
     }
     public function deletePurchases($supplierCredit, $document)
     {
-        foreach($document->purchases as $purchase)
-        {
+        foreach ($document->purchases as $purchase) {
             $purchase->delete();
         }
     }

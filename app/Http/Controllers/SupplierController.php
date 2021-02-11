@@ -89,7 +89,7 @@ class SupplierController extends Controller
                 $path = request()->file('suppliers')->storeAs('input/suppliers', $filename);
                 $csv = array_map('str_getcsv', file(base_path() . "/storage/app/" . $path));
                 $messages = array();
-                $error = false;
+                //$error = false;
                 $company = \Auth::user()->currentCompany->company;
                 $count = count($csv);
                 for ($row = 0; $row < $count; $row++) {
@@ -97,7 +97,7 @@ class SupplierController extends Controller
                         $name = $csv[$row][0];
                         if (is_null($name)) {
                             $messages[] = 'Line ' . ($row + 1) . ' is blank.';
-                            $error = true;
+                            //$error = true;
                         } else {
                             $supplier = new Supplier([
                                 'company_id' => $company->id,

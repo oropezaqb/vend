@@ -52,18 +52,24 @@ class AjaxSCController extends Controller
             $productNames[] = array($documentILine->product->name);
         }
         return response()->json(array('document'=> $document, 'suppliername' => $supplier->name,
-            'clines' => $document->categoryLines, 'ilines' => $document->itemLines, 'accounttitles' => $accountTitles, 'productnames' => $productNames), 200);
+            'clines' => $document->categoryLines, 'ilines' => $document->itemLines,
+            'accounttitles' => $accountTitles, 'productnames' => $productNames), 200);
     }
     public function getAmounts(Request $request)
     {
-        $company = \Auth::user()->currentCompany->company;
         $purchasableDoc = $request->input('purchasable_doc');
         $docId = $request->input('doc_id');
         $productId = $request->input('product_id');
         $quantity = $request->input('quantity_returned');
         $supplierCreditId = $request->input('supplier_credit_id');
         $createSupplierCredit = new CreateSupplierCredit();
-        $amounts = $createSupplierCredit->determineAmounts($purchasableDoc, $docId, $productId, $quantity, $supplierCreditId);
+        $amounts = $createSupplierCredit->determineAmounts(
+            $purchasableDoc,
+            $docId,
+            $productId,
+            $quantity,
+            $supplierCreditId
+        );
         if (is_null($amounts)) {
             return response()->json(array('amounts' => null), 200);
         }

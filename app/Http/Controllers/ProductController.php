@@ -103,7 +103,7 @@ class ProductController extends Controller
                 $path = request()->file('products')->storeAs('input/products', $filename);
                 $csv = array_map('str_getcsv', file(base_path() . "/storage/app/" . $path));
                 $messages = array();
-                $error = false;
+                //$error = false;
                 $company = \Auth::user()->currentCompany->company;
                 $count = count($csv);
                 for ($row = 0; $row < $count; $row++) {
@@ -111,7 +111,7 @@ class ProductController extends Controller
                         $name = $csv[$row][0];
                         if (is_null($name)) {
                             $messages[] = 'Line ' . ($row + 1) . ' is blank.';
-                            $error = true;
+                            //$error = true;
                         } else {
                             $product = new Product([
                                 'company_id' => $company->id,
