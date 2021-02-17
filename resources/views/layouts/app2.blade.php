@@ -75,7 +75,7 @@
             <a class="collapse-item" href="#">Transfer</a>
             <a class="collapse-item" href="#">Journal entry</a>
             <a class="collapse-item" href="#">Statement</a>
-            <a class="collapse-item" href="#">Inventory qty adjustment</a>
+            <a class="collapse-item" href="/inventory_qty_adjs">Inventory qty adjustment</a>
             <a class="collapse-item" href="#">Paydown credit card</a>
           </div>
         </div>

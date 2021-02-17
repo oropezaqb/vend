@@ -34,6 +34,7 @@ Route::post('/creditnote/getinvoice', 'AjaxCNController@getInvoice');
 Route::post('/creditnote/getamounts', 'AjaxCNController@getAmounts');
 Route::post('/suppliercredit/getdocument', 'AjaxSCController@getDocument');
 Route::post('/suppliercredit/getamounts', 'AjaxSCController@getAmounts');
+Route::post('/inventory_qty_adjs/getquantities', 'AjaxInvQtyAdjController@getQuantities');
 
 Route::resources([
     'companies' => 'CompanyController',
@@ -58,6 +59,7 @@ Route::resources([
     'received_payments' => 'ReceivedPaymentController',
     'creditnote' => 'CreditNoteController',
     'suppliercredit' => 'SupplierCreditController',
+    'inventory_qty_adjs' => 'InventoryQtyAdjController',
 ]);
 
 Route::resource('queries', 'QueryController');

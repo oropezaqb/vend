@@ -74,6 +74,14 @@ class UpdateSales
                 $createInvoice->recordJournalEntry($creditNote, $input);
                 $createInvoice->recordPurchases($creditNote);
             }
+            if ($transaction->type == 'inventory_qty_adj') {
+                $inventoryQtyAdj = $transaction->transactable;
+                $input = array();
+                $row = 0;
+                $createInventoryQtyAdj = new CreateInventoryQtyAdj();
+                $createInventoryQtyAdj->updateSalesAndPurchases($inventoryQtyAdj);
+                $createInventoryQtyAdj->recordJournalEntry($inventoryQtyAdj);
+            }
         }
     }
     public function deleteSales($transaction, $invoice)
