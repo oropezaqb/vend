@@ -10,11 +10,31 @@
                         class="container"
                     >
                         <h6 class="font-weight-bold">Accounting</h6>
+                            <div style="display:inline-block;"><form method="POST" action="/reports/comprehensive_income">
+                                @csrf
+                                <button class="btn btn-link" type="submit">Generate</button>
+                            </form></div>
+                            <div style="display:inline-block;">&nbsp;&nbsp;<span>Statement of Comprehensive Income</span></div><br>
+                            <div style="display:inline-block;"><form method="POST" action="/reports/financial_position">
+                                @csrf
+                                <button class="btn btn-link" type="submit">Generate</button>
+                            </form></div>
+                            <div style="display:inline-block;">&nbsp;&nbsp;<span>Statement of Financial Position</span></div><br>
+                            <div style="display:inline-block;"><form method="POST" action="/reports/changes_in_equity">
+                                @csrf
+                                <button class="btn btn-link" type="submit">Generate</button>
+                            </form></div>
+                            <div style="display:inline-block;">&nbsp;&nbsp;<span>Statement of Changes in Owner&#39;s Equity</span></div><br>
+                            <div style="display:inline-block;"><form method="POST" action="/reports/cash_flows">
+                                @csrf
+                                <button class="btn btn-link" type="submit">Generate</button>
+                            </form></div>
+                            <div style="display:inline-block;">&nbsp;&nbsp;<span>Statement of Cash Flows</span></div><br>
                             <div style="display:inline-block;"><form method="POST" action="/reports/trial_balance">
                                 @csrf
                                 <button class="btn btn-link" type="submit">Generate</button>
                             </form></div>
-                            <div style="display:inline-block;">&nbsp;&nbsp;<span>Trial Balance</span></div>
+                            <div style="display:inline-block;">&nbsp;&nbsp;<span>Trial Balance</span></div><br><br>
                         <h6 class="font-weight-bold">Others</h6>
                         @forelse ($queries as $query)
                             <div id="query">

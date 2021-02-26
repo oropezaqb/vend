@@ -14,10 +14,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
-});
-
-Route::get('/innobooks', function () {
     return view('innobooks');
 });
 
@@ -64,12 +60,14 @@ Route::resources([
 
 Route::resource('queries', 'QueryController');
 
-Route::post('queries/{query}/run', 'QueryController@run')->name('queries.run');
-Route::post('reports/{query}/screen', 'ReportController@screen')->name('reports.screen');
-Route::post('reports/{query}/pdf', 'ReportController@pdf')->name('reports.pdf');
-Route::post('reports/{query}/csv', 'ReportController@csv')->name('reports.csv');
-Route::post('reports/{query}/run', 'ReportController@run')->name('reports.run');
-Route::post('reports/trial_balance', 'ReportController@trialBalance')->name('reports.trial_balance');
+Route::post('/queries/{query}/run', 'QueryController@run')->name('queries.run');
+Route::post('/reports/{query}/screen', 'ReportController@screen')->name('reports.screen');
+Route::post('/reports/{query}/pdf', 'ReportController@pdf')->name('reports.pdf');
+Route::post('/reports/{query}/csv', 'ReportController@csv')->name('reports.csv');
+Route::post('/reports/{query}/run', 'ReportController@run')->name('reports.run');
+Route::post('/reports/trial_balance', 'ReportController@trialBalance')->name('reports.trial_balance');
+Route::post('/reports/comprehensive_income', 'ReportController@comprehensiveIncome')->name('reports.comprehensive_income');
+Route::post('/reports/run_comprehensive_income', 'ReportController@runComprehensiveIncome')->name('reports.run_comprehensive_income');
 Route::get('/reports', 'ReportController@index')->name('reports.index');
 
 Route::get('/search', 'SearchController@index')->name('search');

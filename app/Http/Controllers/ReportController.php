@@ -12,6 +12,7 @@ use App\Query;
 use Illuminate\Support\Facades\Storage;
 use DateTime;
 use Dompdf\Dompdf;
+use App\Posting;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -77,6 +78,10 @@ class ReportController extends Controller
     {
         return view('reports.trial_balance');
     }
+    public function comprehensiveIncome()
+    {
+        return view('reports.comprehensive_income');
+    }
     public function run(Request $request)
     {
         $query = new Query();
@@ -94,5 +99,80 @@ class ReportController extends Controller
             ORDER BY theType ASC;");
         $headings = array('Account Title', 'Debit', 'Credit');
         return view('reports.trial_balance.screen', compact('query', 'stmt', 'headings'));
+    }
+    public function runComprehensiveIncome(Request $request)
+    {
+        $query = new Query();
+        $query->title = "Statement of Comprehensive Income";
+        $begDate = DateTime::createFromFormat('Y-m-d', "$request->beg_date");
+        $endDate = DateTime::createFromFormat('Y-m-d', "$request->end_date");
+        $query->date = date_format($begDate, 'M d, Y') . ' - ' . date_format($endDate, 'M d, Y');
+        $amounts = array();
+        $amounts['revenue'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '410 - Revenue')
+            ->sum('debit');
+        $amounts['revenue'] *= -1;
+        $amounts['other_income'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '420 - Other Income')
+            ->sum('debit');
+        $amounts['other_income'] *= -1;
+        $amounts['total_income'] = $amounts['revenue'] + $amounts['other_income'];
+        $amounts['cost_of_goods_sold'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '510 - Cost of Goods Sold')
+            ->sum('debit');
+        $amounts['gross_profit'] = $amounts['total_income'] - $amounts['cost_of_goods_sold'];
+        $amounts['expenses'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '520 - Operating Expense')
+            ->sum('debit');
+        $amounts['profit_before_tax'] = $amounts['gross_profit'] - $amounts['expenses'];
+        $amounts['income_tax'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '590 - Income Tax Expense')
+            ->sum('debit');
+        $amounts['net_income'] = $amounts['profit_before_tax'] - $amounts['income_tax'];
+        $amounts['other_comprehensive_income'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '340 - Other Comprehensive Income')
+            ->sum('debit');;
+        $amounts['other_comprehensive_income'] *= -1;
+        $amounts['total_comprehensive_income'] = $this->myformat($amounts['net_income'] + $amounts['other_comprehensive_income']);
+        $amounts['revenue'] = $this->myformat($amounts['revenue']);
+        $amounts['other_income'] = $this->myformat($amounts['other_income']);
+        $amounts['total_income'] = $this->myformat($amounts['total_income']);
+        $amounts['cost_of_goods_sold'] = $this->myformat($amounts['cost_of_goods_sold']);
+        $amounts['gross_profit'] = $this->myformat($amounts['gross_profit']);
+        $amounts['expenses'] = $this->myformat($amounts['expenses']);
+        $amounts['profit_before_tax'] = $this->myformat($amounts['profit_before_tax']);
+        $amounts['income_tax'] = $this->myformat($amounts['income_tax']);
+        $amounts['net_income'] = $this->myformat($amounts['net_income']);
+        $amounts['other_comprehensive_income'] = $this->myformat($amounts['other_comprehensive_income']);
+        return view('reports.comprehensive_income.screen', compact('query', 'amounts'));
+    }
+    function myformat($nr)
+    {
+        $nr = number_format($nr, 2);
+        return $nr[0] == '-' ? "(" . substr($nr, 1) . ")" : $nr;
     }
 }
