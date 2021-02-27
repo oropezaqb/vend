@@ -14,6 +14,17 @@ class CreateAccountsTable extends Migration
      */
     public function up()
     {
+        Schema::create('line_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('company_id');
+            $table->string('name');
+            $table->unique(['company_id', 'name']);
+            $table->timestamps();
+            $table->foreign('company_id')
+                ->references('id')
+                ->on('companies')
+                ->onDelete('cascade');
+        });
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('company_id');
@@ -36,14 +47,17 @@ class CreateAccountsTable extends Migration
                 '420 - Other Income',
                 '510 - Cost of Goods Sold',
                 '520 - Operating Expense',
-                '590 - Income Tax Expense',
-                '600 - Other Accounts'
+                '590 - Income Tax Expense'
             ]);
+            $table->unsignedBigInteger('line_item_id');
             $table->boolean('subsidiary_ledger');
             $table->foreign('company_id')
                 ->references('id')
                 ->on('companies')
                 ->onDelete('cascade');
+            $table->foreign('line_item_id')
+                ->references('id')
+                ->on('line_items');
             $table->timestamps();
         });
     }

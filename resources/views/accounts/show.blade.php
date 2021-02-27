@@ -15,6 +15,7 @@
                                 <p>Account Title: {{ $account->title }}</p>
                                 <p>Account Type: {{ $account->type }}</p>
                                 <p>With Subsidiary Ledger: {{ $account->subsidiary_ledger ? 'Yes' : 'No' }}</p>
+                                <p>Account Line Item: {{ $account->lineItem->name }}</p>
                             </div>
                             <div style="display:inline-block;"><button class="btn btn-primary" onclick="location.href = '/accounts/{{ $account->id }}/edit';">Edit</button></div>
                             <div style="display:inline-block;"><form method="POST" action="/accounts/{{ $account->id }}">

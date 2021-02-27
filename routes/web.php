@@ -56,6 +56,7 @@ Route::resources([
     'creditnote' => 'CreditNoteController',
     'suppliercredit' => 'SupplierCreditController',
     'inventory_qty_adjs' => 'InventoryQtyAdjController',
+    'line_items' => 'LineItemController',
 ]);
 
 Route::resource('queries', 'QueryController');

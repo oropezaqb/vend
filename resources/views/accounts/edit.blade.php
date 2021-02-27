@@ -60,11 +60,42 @@
                                         <p class="help is-danger">{{ $message }}</p>
                                     @enderror
                                 </div>
+                                <div class="form-group">
+                                    <label for="line_item_id">Line&nbsp;Item:&nbsp;</label>&nbsp;
+                                    <input list="line_item_ids" id="line_item_id0" onchange="setValue(this)" data-id="" class="custom-select @error('line_item_id') is-danger @enderror" required value="{!! old('line_item_name', $account->lineItem->name) !!}">
+                                    <datalist id="line_item_ids">
+                                        @foreach ($lineItems as $lineItem)
+                                            <option data-value="{{ $lineItem->id }}">{{ $lineItem->name }}</option>
+                                        @endforeach
+                                    </datalist>
+                                    <input type="hidden" name="line_item_id" id="line_item_id0-hidden" value="{!! old('line_item_id', $account->lineItem->id) !!}">
+                                    <input type="hidden" name="line_item_name" id="name-line_item_id0-hidden" value="{!! old('line_item_name', $account->lineItem->name) !!}">
+                                </div>
                                 {!! Form::checkbox('subsidiary_ledger', true, $account->subsidiary_ledger) !!}
                                 {!! Form::label('subsidiary_ledger', 'Subsidiary Ledger') !!}
                                 <br>
                             <button class="btn btn-primary" type="submit">Save</button>
                         </form>
+                        <script>
+                            function setValue (id) 
+                            {
+                                var input = id,
+                                    list = input.getAttribute('list'),
+                                    options = document.querySelectorAll('#' + list + ' option'),
+                                    hiddenInput = document.getElementById(input.getAttribute('id') + '-hidden'),
+                                    hiddenInputName = document.getElementById('name-' + input.getAttribute('id') + '-hidden'),
+                                    label = input.value;
+                                hiddenInputName.value = label;
+                                hiddenInput.value = label;
+                                for(var i = 0; i < options.length; i++) {
+                                    var option = options[i];
+                                    if(option.innerText === label) {
+                                        hiddenInput.value = option.getAttribute('data-value');
+                                        break;
+                                    }
+                                }
+                            }
+                        </script>
                     </div>
                 </div>
             </div>

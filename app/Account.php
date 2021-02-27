@@ -15,6 +15,10 @@ class Account extends Model
     {
         return $this->belongsTo(Posting::class);
     }
+    public function lineItem()
+    {
+        return $this->belongsTo(LineItem::class);
+    }
     public function products()
     {
         return $this->hasMany(Product::class);

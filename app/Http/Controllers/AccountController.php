@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Account;
 use Illuminate\Http\Request;
+use App\LineItem;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -37,10 +38,12 @@ class AccountController extends Controller
     }
     public function create()
     {
+        $company = \Auth::user()->currentCompany->company;
+        $lineItems = LineItem::where('company_id', $company->id)->latest()->get();
         if (\Route::currentRouteName() === 'accounts.create') {
             \Request::flash();
         }
-        return view('accounts.create');
+        return view('accounts.create', compact('lineItems'));
     }
     public function store()
     {
@@ -55,6 +58,7 @@ class AccountController extends Controller
             'number' => request('number'),
             'title' => request('title'),
             'type' => request('type'),
+            'line_item_id' => request('line_item_id'),
             'subsidiary_ledger' => $subsidiaryLedger
         ]);
         $account->save();
@@ -62,10 +66,12 @@ class AccountController extends Controller
     }
     public function edit(Account $account)
     {
+        $company = \Auth::user()->currentCompany->company;
+        $lineItems = LineItem::where('company_id', $company->id)->latest()->get();
         if (\Route::currentRouteName() === 'accounts.edit') {
             \Request::flash();
         }
-        return view('accounts.edit', compact('account'));
+        return view('accounts.edit', compact('account', 'lineItems'));
     }
     public function update(Account $account)
     {
@@ -78,6 +84,7 @@ class AccountController extends Controller
             'number' => request('number'),
             'title' => request('title'),
             'type' => request('type'),
+            'line_item_id' => request('line_item_id'),
             'subsidiary_ledger' => $subsidiaryLedger
         ]);
         return redirect($account->path());
@@ -87,7 +94,8 @@ class AccountController extends Controller
         return request()->validate([
             'number' => 'required',
             'title' => 'required',
-            'type' => 'required'
+            'type' => 'required',
+            'line_item_id' => 'required'
         ]);
     }
     public function destroy(Account $account)
