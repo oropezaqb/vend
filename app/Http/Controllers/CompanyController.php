@@ -9,6 +9,7 @@ use App\Role;
 use App\CurrentCompany;
 use App\Document;
 use App\Notifications\CompanyCreated;
+use App\Jobs\CreateCompany;
 
 class CompanyController extends Controller
 {
@@ -47,29 +48,14 @@ class CompanyController extends Controller
     public function store()
     {
         try {
-            $this->validateCompany();
-            $company = new Company(request(['name']));
-            $company->code = substr(md5(microtime()), rand(0, 26), 6);
-            $company->save();
-            $user = \Auth::user();
-            $company->employ($user);
-            $approveApplication = Ability::firstOrCreate(['name'
-                => 'approve_job_application', 'company_id' => $company->id]);
-            $admin = Role::firstOrCreate(['name' => 'admin', 'company_id' => $company->id]);
-            $admin->allowTo($approveApplication);
-            $user->assignRole($admin);
-            $recordJournalEntries = Ability::firstOrCreate(['name'
-                => 'record_journal_entries', 'company_id' => $company->id]);
-            $staff = Role::firstOrCreate(['name' => 'staff', 'company_id' => $company->id]);
-            $staff->allowTo($recordJournalEntries);
-            $company->save();
-            $approveApplication->save();
-            $admin->save();
-            $currentCompany = new CurrentCompany(['user_id' => $user->id, 'company_id' => $company->id]);
-            $currentCompany->save();
-            Document::firstOrCreate(['name' => 'Journal Entry', 'company_id' => $company->id]);
-            Document::firstOrCreate(['name' => 'Bill', 'company_id' => $company->id]);
-            \Notification::send($user, new CompanyCreated($company));
+            \DB::transaction(function () {
+                $this->validateCompany();
+                $company = new Company(request(['name']));
+                $company->code = substr(md5(microtime()), rand(0, 26), 6);
+                $company->save();
+                $createCompany = new CreateCompany();
+                $createCompany->run($company);
+            });
             return redirect(route('home'))
                 ->with('status', 'Company created! You may now start adding items through the navigation pane.');
         } catch (\Exception $e) {

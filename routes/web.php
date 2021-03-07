@@ -69,6 +69,8 @@ Route::post('/reports/{query}/run', 'ReportController@run')->name('reports.run')
 Route::post('/reports/trial_balance', 'ReportController@trialBalance')->name('reports.trial_balance');
 Route::post('/reports/comprehensive_income', 'ReportController@comprehensiveIncome')->name('reports.comprehensive_income');
 Route::post('/reports/run_comprehensive_income', 'ReportController@runComprehensiveIncome')->name('reports.run_comprehensive_income');
+Route::get('/reports/financial_position', 'ReportController@financialPosition')->name('reports.financial_position');
+Route::post('/reports/run_financial_position', 'ReportController@runFinancialPosition')->name('reports.run_financial_position');
 Route::get('/reports', 'ReportController@index')->name('reports.index');
 
 Route::get('/search', 'SearchController@index')->name('search');

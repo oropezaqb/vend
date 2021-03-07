@@ -15,7 +15,7 @@
                                 <button class="btn btn-link" type="submit">Generate</button>
                             </form></div>
                             <div style="display:inline-block;">&nbsp;&nbsp;<span>Statement of Comprehensive Income</span></div><br>
-                            <div style="display:inline-block;"><form method="POST" action="/reports/financial_position">
+                            <div style="display:inline-block;"><form method="GET" action="/reports/financial_position">
                                 @csrf
                                 <button class="btn btn-link" type="submit">Generate</button>
                             </form></div>

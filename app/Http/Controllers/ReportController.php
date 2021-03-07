@@ -82,6 +82,10 @@ class ReportController extends Controller
     {
         return view('reports.comprehensive_income');
     }
+    public function financialPosition()
+    {
+        return view('reports.financial_position');
+    }
     public function run(Request $request)
     {
         $query = new Query();
@@ -174,5 +178,160 @@ class ReportController extends Controller
     {
         $nr = number_format($nr, 2);
         return $nr[0] == '-' ? "(" . substr($nr, 1) . ")" : $nr;
+    }
+    public function runFinancialPosition(Request $request)
+    {
+        $company = \Auth::user()->currentCompany->company;
+        $query = new Query();
+        $query->title = "Statement of Financial Position";
+        $date = DateTime::createFromFormat('Y-m-d', "$request->date");
+        $query->date = 'As of ' . date_format($date, 'M d, Y');
+        $amounts = array();
+        $currentAssets = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $date)
+            ->where('accounts.type', '110 - Cash and Cash Equivalents')
+            ->orWhere('accounts.type', '120 - Non-Cash Current Asset')
+            ->groupBy('line_items.id')
+            ->get();
+        $amounts['current_assets'] = 0;
+        foreach($currentAssets as $currentAsset)
+        {
+            $amounts['current_assets'] += $currentAsset->debit;
+            $currentAsset->debit = $this->myformat($currentAsset->debit);
+        }
+        $noncurrentAssets = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $date)
+            ->where('accounts.type', '150 - Non-Current Asset')
+            ->groupBy('line_items.id')
+            ->get();
+        $amounts['noncurrent_assets'] = 0;
+        foreach($noncurrentAssets as $noncurrentAsset)
+        {
+            $amounts['noncurrent_assets'] += $noncurrentAsset->debit;
+            $noncurrentAsset->debit = $this->myformat($noncurrentAsset->debit);
+        }
+        $currentLiabilities = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $date)
+            ->where('accounts.type', '210 - Current Liabilities')
+            ->groupBy('line_items.id')
+            ->get();
+        $amounts['current_liabilities'] = 0;
+        foreach($currentLiabilities as $currentLiability)
+        {
+            $currentLiability->debit *= -1;
+            $amounts['current_liabilities'] += $currentLiability->debit;
+            $currentLiability->debit = $this->myformat($currentLiability->debit);
+        }
+        $noncurrentLiabilities = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $date)
+            ->where('accounts.type', '250 - Non-Current Liabilities')
+            ->groupBy('line_items.id')
+            ->get();
+        $amounts['noncurrent_liabilities'] = 0;
+        foreach($noncurrentLiabilities as $noncurrentLiability)
+        {
+            $noncurrentLiability->debit *= -1;
+            $amounts['noncurrent_liabilities'] += $noncurrentLiability->debit;
+            $noncurrentLiability->debit = $this->myformat($noncurrentLiability->debit);
+        }
+        $equities = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $date)
+            ->where('accounts.type', '310 - Capital')
+            ->orWhere('accounts.type', '320 - Share Premium')
+            ->orWhere('accounts.type', '340 - Other Comprehensive Income')
+            ->groupBy('line_items.id')
+            ->get();
+        $amounts['total_equity'] = 0;
+        foreach($equities as $equity)
+        {
+            $equity->debit *= -1;
+            $amounts['total_equity'] += $equity->debit;
+            $equity->debit = $this->myformat($equity->debit);
+        }
+        $appropriatedREs = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $date)
+            ->where('accounts.type', '330 - Retained Earnings')
+            ->where('line_items.name', 'Appropriated retained earnings')
+            ->groupBy('line_items.id')
+            ->get();
+        foreach($appropriatedREs as $appropriatedRE)
+        {
+            $appropriatedRE->debit *= -1;
+            $amounts['total_equity'] += $appropriatedRE->debit;
+            $appropriatedRE->debit = $this->myformat($appropriatedRE->debit);
+        }
+        $amounts['retained_earnings'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $date)
+            ->where('accounts.type', '330 - Retained Earnings')
+            ->whereNotIn('line_items.name', ['Appropriated retained earnings'])
+            ->sum('postings.debit');
+        $amounts['retained_earnings'] += \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $date)
+            ->where('accounts.type', '350 - Drawing')
+            ->orWhere('accounts.type', '390 - Income Summary')
+            ->orWhere('accounts.type', '410 - Revenue')
+            ->orWhere('accounts.type', '420 - Other Income')
+            ->orWhere('accounts.type', '510 - Cost of Goods Sold')
+            ->orWhere('accounts.type', '520 - Operating Expense')
+            ->orWhere('accounts.type', '590 - Income Tax Expense')
+            ->sum('postings.debit');
+        $amounts['total_assets'] = $amounts['current_assets'] + $amounts['noncurrent_assets'];
+        $amounts['total_liabilities'] = $amounts['current_liabilities'] + $amounts['noncurrent_liabilities'];
+        $amounts['retained_earnings'] *= -1;
+        $amounts['total_equity'] += $amounts['retained_earnings'];
+        $amounts['liabilities_equity'] = $amounts['total_liabilities'] + $amounts['total_equity'];
+        if($amounts['total_assets'] != $amounts['liabilities_equity']){
+            return back()->with('status', 'Error found. Please contact your system developer.')->withInput();
+        }
+        $amounts['current_assets'] = $this->myformat($amounts['current_assets']);
+        $amounts['noncurrent_assets'] = $this->myformat($amounts['noncurrent_assets']);
+        $amounts['total_assets'] = $this->myformat($amounts['total_assets']);
+        $amounts['current_liabilities'] = $this->myformat($amounts['current_liabilities']);
+        $amounts['noncurrent_liabilities'] = $this->myformat($amounts['noncurrent_liabilities']);
+        $amounts['total_liabilities'] = $this->myformat($amounts['total_liabilities']);
+        $amounts['retained_earnings'] = $this->myformat($amounts['retained_earnings']);
+        $amounts['total_equity'] = $this->myformat($amounts['total_equity']);
+        $amounts['liabilities_equity'] = $this->myformat($amounts['liabilities_equity']);        
+        return view('reports.financial_position.screen', compact('query', 'amounts', 'currentAssets', 'noncurrentAssets', 'currentLiabilities', 'noncurrentLiabilities', 'equities', 'appropriatedREs'));
     }
 }
