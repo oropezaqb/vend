@@ -20,7 +20,7 @@
                                 <button class="btn btn-link" type="submit">Generate</button>
                             </form></div>
                             <div style="display:inline-block;">&nbsp;&nbsp;<span>Statement of Financial Position</span></div><br>
-                            <div style="display:inline-block;"><form method="POST" action="/reports/changes_in_equity">
+                            <div style="display:inline-block;"><form method="GET" action="/reports/changes_in_equity">
                                 @csrf
                                 <button class="btn btn-link" type="submit">Generate</button>
                             </form></div>

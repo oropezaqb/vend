@@ -71,6 +71,8 @@ Route::post('/reports/comprehensive_income', 'ReportController@comprehensiveInco
 Route::post('/reports/run_comprehensive_income', 'ReportController@runComprehensiveIncome')->name('reports.run_comprehensive_income');
 Route::get('/reports/financial_position', 'ReportController@financialPosition')->name('reports.financial_position');
 Route::post('/reports/run_financial_position', 'ReportController@runFinancialPosition')->name('reports.run_financial_position');
+Route::get('/reports/changes_in_equity', 'ReportController@changesInEquity')->name('reports.changes_in_equity');
+Route::post('/reports/run_changes_in_equity', 'ReportController@runChangesInEquity')->name('reports.run_changes_in_equity');
 Route::get('/reports', 'ReportController@index')->name('reports.index');
 
 Route::get('/search', 'SearchController@index')->name('search');

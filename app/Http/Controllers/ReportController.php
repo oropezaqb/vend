@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use DateTime;
 use Dompdf\Dompdf;
 use App\Posting;
+use App\LineItem;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -85,6 +86,10 @@ class ReportController extends Controller
     public function financialPosition()
     {
         return view('reports.financial_position');
+    }
+    public function changesInEquity()
+    {
+        return view('reports.changes_in_equity');
     }
     public function run(Request $request)
     {
@@ -333,5 +338,322 @@ class ReportController extends Controller
         $amounts['total_equity'] = $this->myformat($amounts['total_equity']);
         $amounts['liabilities_equity'] = $this->myformat($amounts['liabilities_equity']);        
         return view('reports.financial_position.screen', compact('query', 'amounts', 'currentAssets', 'noncurrentAssets', 'currentLiabilities', 'noncurrentLiabilities', 'equities', 'appropriatedREs'));
+    }
+    public function runChangesInEquity(Request $request)
+    {
+        $company = \Auth::user()->currentCompany->company;
+        $query = new Query();
+        $query->title = "Statement of Changes in Equity";
+        $begDate = DateTime::createFromFormat('Y-m-d', "$request->beg_date");
+        $endDate = DateTime::createFromFormat('Y-m-d', "$request->end_date");
+        $query->date = 'For the Period ' . date_format($begDate, 'M d, Y') . ' - ' . date_format($endDate, 'M d, Y');
+        $amounts = array();
+        $equities = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->where([
+                ['journal_entries.company_id', $company->id],
+                ['journal_entries.date', '<=', $endDate],
+                ['accounts.type', '310 - Capital']
+            ])
+            ->orWhere(function($query) use ($company, $endDate) {
+                $query->where('journal_entries.company_id', $company->id)
+                      ->where('journal_entries.date', '<=', $endDate)
+                      ->where('accounts.type', '320 - Share Premium');
+            })
+            ->orWhere(function($query) use ($company, $endDate) {
+                $query->where('journal_entries.company_id', $company->id)
+                      ->where('journal_entries.date', '<=', $endDate)
+                      ->where('accounts.type', '340 - Other Comprehensive Income');
+            })
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->groupBy('line_items.id')
+            ->get();
+        $appropriatedREs = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where('journal_entries.company_id', $company->id)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '330 - Retained Earnings')
+            ->where('line_items.name', 'Appropriated retained earnings')
+            ->groupBy('line_items.id')
+            ->get();
+        $amounts['beg_total_equity'] = 0;
+        foreach($equities as $equity)
+        {
+            $lineItem = LineItem::find($equity->id);
+            $begAmount = \DB::table('journal_entries')
+                ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+                ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+                ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+                ->where([
+                    ['journal_entries.company_id', $company->id],
+                    ['journal_entries.date', '<', $begDate],
+                    ['accounts.type', '310 - Capital'],
+                    ['line_items.id', $lineItem->id]
+                ])
+                ->orWhere(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '320 - Share Premium')
+                          ->where('line_items.id', $lineItem->id);
+                })
+                ->orWhere(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '340 - Other Comprehensive Income')
+                          ->where('line_items.id', $lineItem->id);
+                })
+                ->sum('debit');
+            $begAmount *= -1;
+            $amounts['beg_total_equity'] += $begAmount;
+            $amounts['beg'][] = $this->myformat($begAmount);
+        }
+        $amounts['total_OCI'] = 0;
+        foreach($equities as $equity)
+        {
+            $lineItem = LineItem::find($equity->id);
+            $OCIAmount = \DB::table('journal_entries')
+                ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+                ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+                ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+                ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+                ->where([
+                    ['journal_entries.company_id', $company->id],
+                    ['journal_entries.date', '<=', $endDate],
+                    ['accounts.type', '310 - Capital'],
+                    ['line_items.id', $lineItem->id],
+                    ['report_line_items.line_item', 'Other comprehensive income']
+                ])
+                ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '320 - Share Premium')
+                          ->where('line_items.id', $lineItem->id)
+                          ->where('report_line_items.line_item', 'Other comprehensive income');
+                })
+                ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '340 - Other Comprehensive Income')
+                          ->where('line_items.id', $lineItem->id)
+                          ->where('report_line_items.line_item', 'Other comprehensive income');
+                })
+                ->sum('debit');
+            $OCIAmount *= -1;
+            $amounts['total_OCI'] += $OCIAmount;
+            $amounts['OCI'][] = $this->myformat($OCIAmount);
+        }
+        foreach($appropriatedREs as $appropriatedRE)
+        {
+            $lineItem = LineItem::find($appropriatedRE->id);
+            $begAmount = \DB::table('journal_entries')
+                ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+                ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+                ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+                ->where([
+                    ['journal_entries.company_id', $company->id],
+                    ['journal_entries.date', '<', $begDate],
+                    ['accounts.type', '330 - Retained Earnings'],
+                    ['line_items.id', $lineItem->id]
+                ])
+                ->sum('debit');
+            $begAmount *= -1;
+            $amounts['beg_total_equity'] += $begAmount;
+            $amounts['beg'][] = $this->myformat($begAmount);
+        }
+        foreach($appropriatedREs as $appropriatedRE)
+        {
+            $lineItem = LineItem::find($appropriatedRE->id);
+            $OCIAmount = 0;
+            $OCIAmount *= -1;
+            $amounts['total_OCI'] += $OCIAmount;
+            $amounts['OCI'][] = $this->myformat($OCIAmount);
+        }
+        $amounts['total_OCI'] = $this->myformat($amounts['total_OCI']);
+        $amounts['beg_retained_earnings'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '330 - Retained Earnings')
+                          ->whereNotIn('line_items.name', ['Appropriated retained earnings']);
+                })
+            ->sum('postings.debit');
+        $amounts['beg_retained_earnings'] += \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where([
+                    ['journal_entries.company_id', $company->id],
+                    ['journal_entries.date', '<', $begDate],
+                    ['accounts.type', '350 - Drawing'],
+                ])
+            ->orWhere(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '390 - Income Summary');
+                })
+            ->orWhere(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '410 - Revenue');
+                })
+            ->orWhere(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '420 - Other Income');
+                })
+            ->orWhere(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '510 - Cost of Goods Sold');
+                })
+            ->orWhere(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '520 - Operating Expense');
+                })
+            ->orWhere(function($query) use ($company, $begDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<', $begDate)
+                          ->where('accounts.type', '590 - Income Tax Expense');
+                })
+            ->sum('postings.debit');
+        $amounts['beg_retained_earnings'] *= -1;
+        $amounts['beg_total_equity'] += $amounts['beg_retained_earnings'];
+        $amounts['beg_retained_earnings'] = $this->myformat($amounts['beg_retained_earnings']);
+        $amounts['beg_total_equity'] = $this->myformat($amounts['beg_total_equity']);
+        $amounts['end_total_equity'] = 0;
+        foreach($equities as $equity)
+        {
+            $equity->debit *= -1;
+            $amounts['end_total_equity'] += $equity->debit;
+            $equity->debit = $this->myformat($equity->debit);
+        }
+        foreach($appropriatedREs as $appropriatedRE)
+        {
+            $appropriatedRE->debit *= -1;
+            $amounts['end_total_equity'] += $appropriatedRE->debit;
+            $appropriatedRE->debit = $this->myformat($appropriatedRE->debit);
+        }
+        $amounts['revenue'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '410 - Revenue')
+            ->sum('debit');
+        $amounts['revenue'] *= -1;
+        $amounts['other_income'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '420 - Other Income')
+            ->sum('debit');
+        $amounts['other_income'] *= -1;
+        $amounts['total_income'] = $amounts['revenue'] + $amounts['other_income'];
+        $amounts['cost_of_goods_sold'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '510 - Cost of Goods Sold')
+            ->sum('debit');
+        $amounts['gross_profit'] = $amounts['total_income'] - $amounts['cost_of_goods_sold'];
+        $amounts['expenses'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '520 - Operating Expense')
+            ->sum('debit');
+        $amounts['profit_before_tax'] = $amounts['gross_profit'] - $amounts['expenses'];
+        $amounts['income_tax'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '590 - Income Tax Expense')
+            ->sum('debit');
+        $amounts['net_income'] = $amounts['profit_before_tax'] - $amounts['income_tax'];
+        $amounts['other_comprehensive_income'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->where('journal_entries.date', '>=', $begDate)
+            ->where('journal_entries.date', '<=', $endDate)
+            ->where('accounts.type', '340 - Other Comprehensive Income')
+            ->sum('debit');;
+        $amounts['other_comprehensive_income'] *= -1;
+        $amounts['total_comprehensive_income'] = $this->myformat($amounts['net_income'] + $amounts['other_comprehensive_income']);
+        $amounts['net_income'] = $this->myformat($amounts['net_income']);
+        $amounts['other_comprehensive_income'] = $this->myformat($amounts['other_comprehensive_income']);
+
+        $amounts['end_retained_earnings'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '330 - Retained Earnings')
+                          ->whereNotIn('line_items.name', ['Appropriated retained earnings']);
+                })
+            ->sum('postings.debit');
+        $amounts['end_retained_earnings'] += \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->select('line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->where([
+                    ['journal_entries.company_id', $company->id],
+                    ['journal_entries.date', '<=', $endDate],
+                    ['accounts.type', '350 - Drawing'],
+                ])
+            ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '390 - Income Summary');
+                })
+            ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '410 - Revenue');
+                })
+            ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '420 - Other Income');
+                })
+            ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '510 - Cost of Goods Sold');
+                })
+            ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '520 - Operating Expense');
+                })
+            ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '590 - Income Tax Expense');
+                })
+            ->sum('postings.debit');
+        $amounts['end_retained_earnings'] *= -1;
+        $amounts['end_total_equity'] += $amounts['end_retained_earnings'];
+        $amounts['end_retained_earnings'] = $this->myformat($amounts['end_retained_earnings']);
+        $amounts['end_total_equity'] = $this->myformat($amounts['end_total_equity']);
+        return view('reports.changes_in_equity.screen', compact('query', 'amounts', 'equities', 'appropriatedREs', 'begDate', 'endDate'));
     }
 }
