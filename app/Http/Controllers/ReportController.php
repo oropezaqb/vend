@@ -14,6 +14,7 @@ use DateTime;
 use Dompdf\Dompdf;
 use App\Posting;
 use App\LineItem;
+use App\ReportLineItem;
 
     /**
      * @SuppressWarnings(PHPMD.ElseExpression)
@@ -348,6 +349,42 @@ class ReportController extends Controller
         $endDate = DateTime::createFromFormat('Y-m-d', "$request->end_date");
         $query->date = 'For the Period ' . date_format($begDate, 'M d, Y') . ' - ' . date_format($endDate, 'M d, Y');
         $amounts = array();
+        $reportLineItems = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+            ->where([
+                ['journal_entries.company_id', $company->id],
+                ['journal_entries.date', '>=', $begDate],
+                ['journal_entries.date', '<=', $endDate],
+                ['accounts.type', '310 - Capital'],
+                ['report_line_items.line_item', '!=', 'Other comprehensive income']
+            ])
+            ->orWhere(function($query) use ($company, $begDate, $endDate) {
+                $query->where('journal_entries.company_id', $company->id)
+                      ->where('journal_entries.date', '>=', $begDate)
+                      ->where('journal_entries.date', '<=', $endDate)
+                      ->where('accounts.type', '320 - Share Premium')
+                      ->where('report_line_items.line_item', '!=', 'Other comprehensive income');
+            })
+            ->orWhere(function($query) use ($company, $begDate, $endDate) {
+                $query->where('journal_entries.company_id', $company->id)
+                      ->where('journal_entries.date', '>=', $begDate)
+                      ->where('journal_entries.date', '<=', $endDate)
+                      ->where('accounts.type', '340 - Other Comprehensive Income')
+                      ->where('report_line_items.line_item', '!=', 'Other comprehensive income');
+            })
+            ->orWhere(function($query) use ($company, $begDate, $endDate) {
+                $query->where('journal_entries.company_id', $company->id)
+                      ->where('journal_entries.date', '>=', $begDate)
+                      ->where('journal_entries.date', '<=', $endDate)
+                      ->where('accounts.type', '330 - Retained Earnings')
+                      ->where('report_line_items.line_item', '!=', 'Other comprehensive income');
+            })
+            ->select('report_line_items.id')
+            ->groupBy('report_line_items.id')
+            ->get();
         $equities = \DB::table('journal_entries')
             ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
             ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
@@ -413,6 +450,8 @@ class ReportController extends Controller
             $amounts['beg'][] = $this->myformat($begAmount);
         }
         $amounts['total_OCI'] = 0;
+        $amounts['total_TCI'] = 0;
+        $tCICtr = 0;
         foreach($equities as $equity)
         {
             $lineItem = LineItem::find($equity->id);
@@ -423,20 +462,23 @@ class ReportController extends Controller
                 ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
                 ->where([
                     ['journal_entries.company_id', $company->id],
+                    ['journal_entries.date', '>=', $begDate],
                     ['journal_entries.date', '<=', $endDate],
                     ['accounts.type', '310 - Capital'],
                     ['line_items.id', $lineItem->id],
                     ['report_line_items.line_item', 'Other comprehensive income']
                 ])
-                ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                ->orWhere(function($query) use ($company, $begDate, $endDate, $lineItem) {
                     $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '>=', $begDate)
                           ->where('journal_entries.date', '<=', $endDate)
                           ->where('accounts.type', '320 - Share Premium')
                           ->where('line_items.id', $lineItem->id)
                           ->where('report_line_items.line_item', 'Other comprehensive income');
                 })
-                ->orWhere(function($query) use ($company, $endDate, $lineItem) {
+                ->orWhere(function($query) use ($company, $begDate, $endDate, $lineItem) {
                     $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '>=', $begDate)
                           ->where('journal_entries.date', '<=', $endDate)
                           ->where('accounts.type', '340 - Other Comprehensive Income')
                           ->where('line_items.id', $lineItem->id)
@@ -445,8 +487,13 @@ class ReportController extends Controller
                 ->sum('debit');
             $OCIAmount *= -1;
             $amounts['total_OCI'] += $OCIAmount;
+            $amounts['TCI'][$tCICtr] = $OCIAmount;
+            $amounts['total_TCI'] += $OCIAmount;
             $amounts['OCI'][] = $this->myformat($OCIAmount);
+            $amounts['TCI'][$tCICtr] = $this->myformat($amounts['TCI'][$tCICtr]);
+            $tCICtr += 1;
         }
+        $tCICtr = 0;
         foreach($appropriatedREs as $appropriatedRE)
         {
             $lineItem = LineItem::find($appropriatedRE->id);
@@ -531,6 +578,90 @@ class ReportController extends Controller
         $amounts['beg_total_equity'] += $amounts['beg_retained_earnings'];
         $amounts['beg_retained_earnings'] = $this->myformat($amounts['beg_retained_earnings']);
         $amounts['beg_total_equity'] = $this->myformat($amounts['beg_total_equity']);
+        foreach($reportLineItems as $reportLineItem)
+        {
+            $reportLineItem = ReportLineItem::find($reportLineItem->id);
+            $amounts['line_item_total'][$reportLineItem->id] = 0;
+            foreach($equities as $equity)
+            {
+                $lineItem = LineItem::find($equity->id);
+                $amount = \DB::table('journal_entries')
+                    ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+                    ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+                    ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+                    ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+                    ->where([
+                        ['journal_entries.company_id', $company->id],
+                        ['journal_entries.date', '>=', $begDate],
+                        ['journal_entries.date', '<=', $endDate],
+                        ['accounts.type', '310 - Capital'],
+                        ['line_items.id', $lineItem->id],
+                        ['report_line_items.line_item', $reportLineItem->line_item]
+                    ])
+                    ->orWhere(function($query) use ($company, $begDate, $endDate, $lineItem, $reportLineItem) {
+                        $query->where('journal_entries.company_id', $company->id)
+                              ->where('journal_entries.date', '>=', $begDate)
+                              ->where('journal_entries.date', '<=', $endDate)
+                              ->where('accounts.type', '320 - Share Premium')
+                              ->where('line_items.id', $lineItem->id)
+                              ->where('report_line_items.line_item', $reportLineItem->line_item);
+                    })
+                    ->orWhere(function($query) use ($company, $begDate, $endDate, $lineItem, $reportLineItem) {
+                        $query->where('journal_entries.company_id', $company->id)
+                              ->where('journal_entries.date', '>=', $begDate)
+                              ->where('journal_entries.date', '<=', $endDate)
+                              ->where('accounts.type', '340 - Other Comprehensive Income')
+                              ->where('line_items.id', $lineItem->id)
+                              ->where('report_line_items.line_item', $reportLineItem->line_item);
+                    })
+                    ->sum('debit');
+                $amount *= -1;
+                $amounts[$reportLineItem->id][$equity->id] = $amount;
+                $amounts['line_item_total'][$reportLineItem->id] += $amount;
+                $amounts[$reportLineItem->id][$equity->id] = $this->myformat($amounts[$reportLineItem->id][$equity->id]);            
+            }
+            foreach($appropriatedREs as $appropriatedRE)
+            {
+                $lineItem = LineItem::find($appropriatedRE->id);
+                $amount = \DB::table('journal_entries')
+                    ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+                    ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+                    ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+                    ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+                    ->where([
+                        ['journal_entries.company_id', $company->id],
+                        ['journal_entries.date', '>=', $begDate],
+                        ['journal_entries.date', '<=', $endDate],
+                        ['accounts.type', '330 - Retained Earnings'],
+                        ['line_items.id', $lineItem->id],
+                        ['report_line_items.line_item', $reportLineItem->line_item]
+                    ])
+                    ->sum('debit');
+                $amount *= -1;
+                $amounts[$reportLineItem->id][$appropriatedRE->id] = $amount;
+                $amounts['line_item_total'][$reportLineItem->id] += $amount;
+                $amounts[$reportLineItem->id][$appropriatedRE->id] = $this->myformat($amounts[$reportLineItem->id][$appropriatedRE->id]);
+            }
+            $rEAmount = \DB::table('journal_entries')
+                ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+                ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+                ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+                ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+                ->where(function($query) use ($company, $begDate, $endDate, $lineItem, $reportLineItem) {
+                    $query->where('journal_entries.company_id', $company->id)
+                          ->where('journal_entries.date', '>=', $begDate)
+                          ->where('journal_entries.date', '<=', $endDate)
+                          ->where('accounts.type', '330 - Retained Earnings')
+                          ->whereNotIn('line_items.name', ['Appropriated retained earnings'])
+                          ->where('report_line_items.line_item', $reportLineItem->line_item);
+                })
+                ->sum('postings.debit');
+            $rEAmount *= -1;
+            $amounts['retained_earnings'][$reportLineItem->id] = $rEAmount;
+            $amounts['line_item_total'][$reportLineItem->id] += $rEAmount;
+            $amounts['retained_earnings'][$reportLineItem->id] = $this->myformat($amounts['retained_earnings'][$reportLineItem->id]);
+            $amounts['line_item_total'][$reportLineItem->id] = $this->myformat($amounts['line_item_total'][$reportLineItem->id]);
+        }
         $amounts['end_total_equity'] = 0;
         foreach($equities as $equity)
         {
@@ -585,6 +716,8 @@ class ReportController extends Controller
             ->where('accounts.type', '590 - Income Tax Expense')
             ->sum('debit');
         $amounts['net_income'] = $amounts['profit_before_tax'] - $amounts['income_tax'];
+        $amounts['total_TCI'] += $amounts['net_income'];
+        $amounts['total_TCI'] = $this->myformat($amounts['total_TCI']);
         $amounts['other_comprehensive_income'] = \DB::table('journal_entries')
             ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
             ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
@@ -654,6 +787,6 @@ class ReportController extends Controller
         $amounts['end_total_equity'] += $amounts['end_retained_earnings'];
         $amounts['end_retained_earnings'] = $this->myformat($amounts['end_retained_earnings']);
         $amounts['end_total_equity'] = $this->myformat($amounts['end_total_equity']);
-        return view('reports.changes_in_equity.screen', compact('query', 'amounts', 'equities', 'appropriatedREs', 'begDate', 'endDate'));
+        return view('reports.changes_in_equity.screen', compact('query', 'amounts', 'equities', 'appropriatedREs', 'begDate', 'endDate', 'reportLineItems'));
     }
 }

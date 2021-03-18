@@ -49,6 +49,26 @@
                                         <td style='text-align: right; vertical-align: bottom; border-bottom-style: solid; border-bottom-width:1px;'>{{ $amounts['total_OCI'] }}
                                     <tr>
                                         <td style='text-align: left;'>Total comprehensive income
+                                        @foreach($amounts['TCI'] as $TCIAmount)
+                                            <td style='text-align: right; vertical-align: bottom;'>{{ $TCIAmount }}
+                                        @endforeach
+                                        @foreach($appropriatedREs as $appropriatedRE)
+                                            <td style='text-align: right; vertical-align: bottom;'>{{ number_format(0, 2) }}
+                                        @endforeach
+                                        <td style='text-align: right; vertical-align: bottom;'>{{ $amounts['net_income'] }}
+                                        <td style='text-align: right; vertical-align: bottom;'>{{ $amounts['total_TCI'] }}
+                                    @foreach($reportLineItems as $reportLineItem)
+                                        <tr>
+                                            <td style='text-align: left;'>{{ \App\ReportLineitem::find($reportLineItem->id)->line_item }}
+                                            @foreach($equities as $equity)
+                                                <td style='text-align: right; vertical-align: bottom;'>{{ $amounts[$reportLineItem->id][$equity->id] }}
+                                            @endforeach
+                                            @foreach($appropriatedREs as $appropriatedRE)
+                                                <td style='text-align: right; vertical-align: bottom;'>{{ $amounts[$reportLineItem->id][$appropriatedRE->id] }}
+                                            @endforeach
+                                            <td style='text-align: right; vertical-align: bottom;'>{{ $amounts['retained_earnings'][$reportLineItem->id] }}
+                                            <td style='text-align: right; vertical-align: bottom;'>{{ $amounts['line_item_total'][$reportLineItem->id] }}
+                                    @endforeach
                                     <tr>
                                         <td style='text-align: left; width: 240px;'>As at {{ date_format($endDate, 'M d, Y') }}
                                         @foreach($equities as $equity)
