@@ -25,7 +25,7 @@
                                 <button class="btn btn-link" type="submit">Generate</button>
                             </form></div>
                             <div style="display:inline-block;">&nbsp;&nbsp;<span>Statement of Changes in Owner&#39;s Equity</span></div><br>
-                            <div style="display:inline-block;"><form method="POST" action="/reports/cash_flows">
+                            <div style="display:inline-block;"><form method="GET" action="/reports/cash_flows">
                                 @csrf
                                 <button class="btn btn-link" type="submit">Generate</button>
                             </form></div>

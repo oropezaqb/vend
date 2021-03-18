@@ -92,6 +92,10 @@ class ReportController extends Controller
     {
         return view('reports.changes_in_equity');
     }
+    public function cashFlows()
+    {
+        return view('reports.cash_flows');
+    }
     public function run(Request $request)
     {
         $query = new Query();
@@ -788,5 +792,104 @@ class ReportController extends Controller
         $amounts['end_retained_earnings'] = $this->myformat($amounts['end_retained_earnings']);
         $amounts['end_total_equity'] = $this->myformat($amounts['end_total_equity']);
         return view('reports.changes_in_equity.screen', compact('query', 'amounts', 'equities', 'appropriatedREs', 'begDate', 'endDate', 'reportLineItems'));
+    }
+    public function runCashFlows(Request $request)
+    {
+        $company = \Auth::user()->currentCompany->company;
+        $query = new Query();
+        $query->title = "Statement of Cash Flows";
+        $begDate = DateTime::createFromFormat('Y-m-d', "$request->beg_date");
+        $endDate = DateTime::createFromFormat('Y-m-d', "$request->end_date");
+        $query->date = 'For the Period ' . date_format($begDate, 'M d, Y') . ' - ' . date_format($endDate, 'M d, Y');
+        $amounts = array();
+        $operatingCashFlows = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+            ->where([
+                ['journal_entries.company_id', $company->id],
+                ['journal_entries.date', '>=', $begDate],
+                ['journal_entries.date', '<=', $endDate],
+                ['accounts.type', '110 - Cash and Cash Equivalents'],
+                ['report_line_items.report', 'Statement of Cash Flows'],
+                ['report_line_items.section', 'Operating Activities']
+            ])
+            ->select('report_line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->groupBy('report_line_items.id')
+            ->get();
+        $amounts['net_increase'] = 0;
+        $amounts['operating_total'] = 0;
+        foreach($operatingCashFlows as $operatingCashFlow)
+        {
+            $amounts['operating_total'] += $operatingCashFlow->debit;
+            $operatingCashFlow->debit = $this->myformat($operatingCashFlow->debit);
+        }
+        $amounts['net_increase'] += $amounts['operating_total'];
+        $amounts['operating_total'] = $this->myformat($amounts['operating_total']);
+        $investingCashFlows = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+            ->where([
+                ['journal_entries.company_id', $company->id],
+                ['journal_entries.date', '>=', $begDate],
+                ['journal_entries.date', '<=', $endDate],
+                ['accounts.type', '110 - Cash and Cash Equivalents'],
+                ['report_line_items.report', 'Statement of Cash Flows'],
+                ['report_line_items.section', 'Investing Activities']
+            ])
+            ->select('report_line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->groupBy('report_line_items.id')
+            ->get();
+        $amounts['investing_total'] = 0;
+        foreach($investingCashFlows as $investingCashFlow)
+        {
+            $amounts['investing_total'] += $investingCashFlow->debit;
+            $investingCashFlow->debit = $this->myformat($investingCashFlow->debit);
+        }
+        $amounts['net_increase'] += $amounts['investing_total'];
+        $amounts['investing_total'] = $this->myformat($amounts['investing_total']);
+        $financingCashFlows = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+            ->where([
+                ['journal_entries.company_id', $company->id],
+                ['journal_entries.date', '>=', $begDate],
+                ['journal_entries.date', '<=', $endDate],
+                ['accounts.type', '110 - Cash and Cash Equivalents'],
+                ['report_line_items.report', 'Statement of Cash Flows'],
+                ['report_line_items.section', 'Financing Activities']
+            ])
+            ->select('report_line_items.id', \DB::raw('SUM(debit) as debit'))
+            ->groupBy('report_line_items.id')
+            ->get();
+        $amounts['financing_total'] = 0;
+        foreach($financingCashFlows as $financingCashFlow)
+        {
+            $amounts['financing_total'] += $financingCashFlow->debit;
+            $financingCashFlow->debit = $this->myformat($financingCashFlow->debit);
+        }
+        $amounts['net_increase'] += $amounts['financing_total'];
+        $amounts['financing_total'] = $this->myformat($amounts['financing_total']);
+        $amounts['beg'] = \DB::table('journal_entries')
+            ->rightJoin('postings', 'journal_entries.id', '=', 'postings.journal_entry_id')
+            ->leftJoin('accounts', 'postings.account_id', '=', 'accounts.id')
+            ->leftJoin('line_items', 'accounts.line_item_id', '=', 'line_items.id')
+            ->leftJoin('report_line_items', 'postings.report_line_item_id', '=', 'report_line_items.id')
+            ->where([
+                ['journal_entries.company_id', $company->id],
+                ['journal_entries.date', '<', $begDate],
+                ['accounts.type', '110 - Cash and Cash Equivalents']
+            ])
+            ->sum('debit');
+        $amounts['end'] = $amounts['net_increase'] + $amounts['beg'];
+        $amounts['net_increase'] = $this->myformat($amounts['net_increase']);
+        $amounts['beg'] = $this->myformat($amounts['beg']);
+        $amounts['end'] = $this->myformat($amounts['end']);
+        return view('reports.cash_flows.screen', compact('query', 'amounts', 'operatingCashFlows', 'investingCashFlows', 'financingCashFlows'));
     }
 }

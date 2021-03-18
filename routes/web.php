@@ -73,6 +73,8 @@ Route::get('/reports/financial_position', 'ReportController@financialPosition')-
 Route::post('/reports/run_financial_position', 'ReportController@runFinancialPosition')->name('reports.run_financial_position');
 Route::get('/reports/changes_in_equity', 'ReportController@changesInEquity')->name('reports.changes_in_equity');
 Route::post('/reports/run_changes_in_equity', 'ReportController@runChangesInEquity')->name('reports.run_changes_in_equity');
+Route::get('/reports/cash_flows', 'ReportController@cashFlows')->name('reports.cash_flows');
+Route::post('/reports/run_cash_flows', 'ReportController@runCashFlows')->name('reports.run_cash_flows');
 Route::get('/reports', 'ReportController@index')->name('reports.index');
 
 Route::get('/search', 'SearchController@index')->name('search');
