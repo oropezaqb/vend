@@ -3,22 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\CashReceipt;
-//use App\Abstracts\Http\Controller;
-use App\Exports\Sales\Customers as Export;
-use App\Http\Requests\Common\Contact as Request;
-use App\Http\Requests\Common\Import as ImportRequest;
-use App\Imports\Sales\Customers as Import;
-use App\Jobs\Common\CreateContact;
-use App\Jobs\Common\DeleteContact;
-use App\Jobs\Common\UpdateContact;
-use App\Models\Banking\Transaction;
-use App\Models\Common\Contact;
-use App\Models\Sale\Invoice;
-use App\Models\Setting\Currency;
 use App\Account;
 use App\SubsidiaryLedger;
-use Date;
-use Illuminate\Http\Request as BaseRequest;
+use Illuminate\Http\Request;
 
 class CashReceiptController extends Controller
 {
